@@ -1,68 +1,69 @@
 package com.ecommerce_app.entity;
-
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order extends BaseEntity {
+    @Column(nullable = false, unique = true)
+    String orderNumber;
 
-    @Column(nullable = false)
-    private String orderNumber;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
 
-    @Column(nullable = false)
-    private String customerName;
+    @Column(nullable = false, precision = 10, scale = 2)
+    BigDecimal totalAmount;
 
-    @Column(nullable = false)
-    private String customerEmail;
+    @Column(precision = 10, scale = 2)
+    BigDecimal shippingAmount;
 
-    @Column(nullable = false)
-    private String shippingAddress;
+    @Column(precision = 10, scale = 2)
+    BigDecimal taxAmount;
 
-    @Column(nullable = false)
-    private String phoneNumber;
+    @Column(precision = 10, scale = 2)
+    BigDecimal discountAmount;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    String customerNotes;
 
-    @Column(nullable = false)
-    private BigDecimal totalAmount;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    Set<OrderItem> items = new HashSet<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    Payment payment;
 
-    // Helper method to add order item and update relationship
-    public void addOrderItem(OrderItem orderItem) {
-        orderItems.add(orderItem);
-        orderItem.setOrder(this);
-    }
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    Shipping shipping;
 
-    // Helper method to remove order item and update relationship
+    @ManyToOne
+    @JoinColumn(name = "status_id", nullable = false)
+    OrderStatus status;
 
-    public void removeOrderItem(OrderItem orderItem) {
-        orderItems.remove(orderItem);
-        orderItem.setOrder(null);
-    }
+    @ManyToOne
+    @JoinColumn(name = "billing_address_id")
+    Address billingAddress;
 
-    // Helper method to calculate total amount from order items
-    public void calculateTotalAmount() {
-        this.totalAmount = orderItems.stream()
-                .map(OrderItem::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+    @ManyToOne
+    @JoinColumn(name = "shipping_address_id")
+    Address shippingAddress;
 
-    public enum OrderStatus {
-        PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    Coupon coupon;
+
+    private String generateOrderNumber() {
+        return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

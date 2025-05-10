@@ -1,10 +1,8 @@
 package com.ecommerce_app.controller;
 
 import com.ecommerce_app.dto.request.UserCreationRequest;
-import com.ecommerce_app.dto.request.UserProfileUpdateRequest;
 import com.ecommerce_app.dto.request.UserUpdateRequest;
 import com.ecommerce_app.dto.response.UserResponse;
-import com.ecommerce_app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

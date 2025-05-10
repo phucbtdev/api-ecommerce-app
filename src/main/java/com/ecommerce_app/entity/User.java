@@ -2,10 +2,7 @@ package com.ecommerce_app.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,27 +13,25 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true, nullable = false)
-    private String username;
-
-    @Column(unique = true, nullable = false)
-    private String email;
+    @Column(nullable = false, unique = true)
+    String username;
 
     @Column(nullable = false)
-    private String password;
+    String password;
 
-    private String firstName;
-    private String lastName;
+    @Column(nullable = false, unique = true)
+    String email;
 
-    @Builder.Default
+    String firstName;
+
+    String lastName;
+
+    String phoneNumber;
+
     @Column(nullable = false)
-    private boolean active = true;
+    Boolean active = true;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -44,15 +39,26 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Builder.Default
-    private Set<Role> roles = new HashSet<>();
+    Set<Role> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserProfile profile;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    Set<Address> addresses = new HashSet<>();
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    Set<Order> orders = new HashSet<>();
 
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Cart cart;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    Set<Review> reviews = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Wishlist wishlist;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    Set<Notification> notifications = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    Set<UserActivity> activities = new HashSet<>();
 }

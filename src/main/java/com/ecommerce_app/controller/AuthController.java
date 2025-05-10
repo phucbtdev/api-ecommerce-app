@@ -3,8 +3,6 @@ package com.ecommerce_app.controller;
 import com.ecommerce_app.dto.auth.LoginRequest;
 import com.ecommerce_app.dto.auth.SignupRequest;
 import com.ecommerce_app.dto.auth.TokenResponse;
-import com.ecommerce_app.entity.User;
-import com.ecommerce_app.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

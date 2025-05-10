@@ -1,4 +1,5 @@
 package com.ecommerce_app.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -6,16 +7,17 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "order_items")
+@Table(name = "cart_items")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderItem extends BaseEntity {
+public class CartItem extends BaseEntity {
+
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    Order order;
+    @JoinColumn(name = "cart_id", nullable = false)
+    Cart cart;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
@@ -28,11 +30,6 @@ public class OrderItem extends BaseEntity {
     @Column(nullable = false)
     Integer quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    BigDecimal unitPrice;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    BigDecimal totalPrice;
-
-    String variantInfo;
+    @Column(precision = 10, scale = 2)
+    BigDecimal price;
 }

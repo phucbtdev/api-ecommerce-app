@@ -3,16 +3,17 @@ package com.ecommerce_app.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "categories")
@@ -22,15 +23,27 @@ import java.util.List;
 @AllArgsConstructor
 public class Category extends BaseEntity {
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(nullable = false)
+    String name;
 
-    @Column(name = "description")
-    private String description;
+    String description;
 
-    @Column(name = "slug", nullable = false, unique = true)
-    private String slug;
+    String slug;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Product> products = new ArrayList<>();
+    String imageUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    Set<Category> subcategories = new HashSet<>();
+
+    @ManyToMany(mappedBy = "categories")
+    Set<Product> products = new HashSet<>();
+
+    LocalDateTime createdAt;
+
+    LocalDateTime updatedAt;
+
 }

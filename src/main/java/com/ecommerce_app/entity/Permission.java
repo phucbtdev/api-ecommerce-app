@@ -1,30 +1,36 @@
 package com.ecommerce_app.entity;
-
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-
-@Getter
-@Setter
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+import java.util.HashSet;
+import java.util.Set;
+@Entity
+@Table(name = "permissions")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public abstract class BaseEntity {
-
+public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(nullable = false, unique = true)
+    String name;
+
+    String description;
+
     LocalDateTime createdAt;
 
     LocalDateTime updatedAt;
+
+    @ManyToMany(mappedBy = "permissions")
+    Set<Role> roles = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

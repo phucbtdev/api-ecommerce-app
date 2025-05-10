@@ -1,48 +1,64 @@
 package com.ecommerce_app.entity;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "products")
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @Column(nullable = false)
+    String name;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(length = 2000)
+    String description;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false, precision = 10, scale = 2)
+    BigDecimal price;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(nullable = false)
+    String slug;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    String sku;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(nullable = false)
+    Boolean active = true;
 
-    @Column(name = "slug", nullable = false, unique = true)
-    private String slug;
+    BigDecimal weight;
 
-    @Column(name = "sku", nullable = false, unique = true)
-    private String sku;
+    String dimensions;
+
+    @ManyToMany
+    @JoinTable(
+            name = "product_categories",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    Set<Category> categories = new HashSet<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    Set<ProductImage> images = new HashSet<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    Set<ProductVariant> variants = new HashSet<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    Set<Review> reviews = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "product_tags",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    Set<Tag> tags = new HashSet<>();
 }

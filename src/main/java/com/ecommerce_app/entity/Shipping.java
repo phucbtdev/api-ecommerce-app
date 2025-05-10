@@ -1,4 +1,5 @@
 package com.ecommerce_app.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -7,34 +8,30 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "shippings")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Payment extends BaseEntity {
-
+public class Shipping extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
     Order order;
 
     @Column(nullable = false)
-    String paymentMethod;
-
-    @Column(nullable = false)
-    String paymentStatus;
-
-    String transactionId;
+    String shippingMethod;
 
     @Column(precision = 10, scale = 2)
-    BigDecimal amount;
+    BigDecimal shippingCost;
 
-    String currency;
+    String trackingNumber;
 
-    @Column(length = 2000)
-    String paymentDetails;
+    String carrier;
 
-    LocalDateTime paymentDate;
+    LocalDateTime estimatedDeliveryDate;
 
+    LocalDateTime actualDeliveryDate;
+
+    String shippingStatus;
 }
