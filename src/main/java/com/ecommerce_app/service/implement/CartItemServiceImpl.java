@@ -12,6 +12,7 @@ import com.ecommerce_app.mapper.CartItemMapper;
 import com.ecommerce_app.repository.CartItemRepository;
 import com.ecommerce_app.repository.CartRepository;
 import com.ecommerce_app.repository.ProductRepository;
+import com.ecommerce_app.repository.ProductVariantRepository;
 import com.ecommerce_app.service.interfaces.CartItemService;
 import com.ecommerce_app.service.interfaces.CartService;
 import lombok.RequiredArgsConstructor;
