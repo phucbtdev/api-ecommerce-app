@@ -6,9 +6,6 @@ import com.ecommerce_app.dto.response.ProductVariantResponse;
 import com.ecommerce_app.entity.*;
 import org.mapstruct.*;
 
-import java.util.Set;
-import java.util.UUID;
-
 @Mapper(componentModel = "spring", uses = {ProductImageMapper.class})
 public interface ProductVariantMapper {
 
