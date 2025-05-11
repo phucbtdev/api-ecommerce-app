@@ -2,7 +2,7 @@ package com.ecommerce_app.service.implement;
 
 import com.ecommerce_app.dto.request.PermissionCreationRequestDto;
 import com.ecommerce_app.dto.request.PermissionUpdateRequestDto;
-import com.ecommerce_app.dto.response.PermissionResponseDto;
+import com.ecommerce_app.dto.response.PermissionResponse;
 import com.ecommerce_app.entity.Permission;
 import com.ecommerce_app.exception.ResourceAlreadyExistsException;
 import com.ecommerce_app.exception.ResourceNotFoundException;
@@ -28,7 +28,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional
-    public PermissionResponseDto createPermission(PermissionCreationRequestDto permissionCreationRequestDto) {
+    public PermissionResponse createPermission(PermissionCreationRequestDto permissionCreationRequestDto) {
         // Check if permission name already exists
         if (permissionRepository.existsByName(permissionCreationRequestDto.getName())) {
             throw new ResourceAlreadyExistsException("Permission with name " + permissionCreationRequestDto.getName() + " already exists");
@@ -46,7 +46,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public PermissionResponseDto getPermissionById(Long id) {
+    public PermissionResponse getPermissionById(Long id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission with id " + id + " not found"));
 
@@ -55,7 +55,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public PermissionResponseDto getPermissionByName(String name) {
+    public PermissionResponse getPermissionByName(String name) {
         Permission permission = permissionRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission with name " + name + " not found"));
 
@@ -64,7 +64,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionResponseDto> getAllPermissions() {
+    public List<PermissionResponse> getAllPermissions() {
         return permissionRepository.findAll().stream()
                 .map(permissionMapper::toResponseDto)
                 .collect(Collectors.toList());
@@ -72,7 +72,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional
-    public PermissionResponseDto updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto) {
+    public PermissionResponse updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission with id " + id + " not found"));
 
@@ -111,7 +111,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionResponseDto> getPermissionsByNames(Set<String> names) {
+    public List<PermissionResponse> getPermissionsByNames(Set<String> names) {
         return permissionRepository.findByNameIn(names).stream()
                 .map(permissionMapper::toResponseDto)
                 .collect(Collectors.toList());

@@ -4,7 +4,7 @@ package com.ecommerce_app.service.interfaces;
 
 import com.ecommerce_app.dto.request.PermissionCreationRequestDto;
 import com.ecommerce_app.dto.request.PermissionUpdateRequestDto;
-import com.ecommerce_app.dto.response.PermissionResponseDto;
+import com.ecommerce_app.dto.response.PermissionResponse;
 
 import java.util.List;
 import java.util.Set;
@@ -17,7 +17,7 @@ public interface PermissionService {
      * @param permissionCreationRequestDto permission creation data
      * @return created permission response
      */
-    PermissionResponseDto createPermission(PermissionCreationRequestDto permissionCreationRequestDto);
+    PermissionResponse createPermission(PermissionCreationRequestDto permissionCreationRequestDto);
 
     /**
      * Get permission by ID
@@ -25,7 +25,7 @@ public interface PermissionService {
      * @param id permission ID
      * @return permission response
      */
-    PermissionResponseDto getPermissionById(Long id);
+    PermissionResponse getPermissionById(Long id);
 
     /**
      * Get permission by name
@@ -33,14 +33,14 @@ public interface PermissionService {
      * @param name permission name
      * @return permission response
      */
-    PermissionResponseDto getPermissionByName(String name);
+    PermissionResponse getPermissionByName(String name);
 
     /**
      * Get all permissions
      *
      * @return list of all permissions
      */
-    List<PermissionResponseDto> getAllPermissions();
+    List<PermissionResponse> getAllPermissions();
 
     /**
      * Update permission
@@ -49,7 +49,7 @@ public interface PermissionService {
      * @param permissionUpdateRequestDto permission update data
      * @return updated permission response
      */
-    PermissionResponseDto updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto);
+    PermissionResponse updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto);
 
     /**
      * Delete permission
@@ -72,5 +72,5 @@ public interface PermissionService {
      * @param names set of permission names
      * @return list of permissions with matching names
      */
-    List<PermissionResponseDto> getPermissionsByNames(Set<String> names);
+    List<PermissionResponse> getPermissionsByNames(Set<String> names);
 }

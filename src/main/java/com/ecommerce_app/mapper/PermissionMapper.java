@@ -2,7 +2,7 @@ package com.ecommerce_app.mapper;
 
 import com.ecommerce_app.dto.request.PermissionCreationRequestDto;
 import com.ecommerce_app.dto.request.PermissionUpdateRequestDto;
-import com.ecommerce_app.dto.response.PermissionResponseDto;
+import com.ecommerce_app.dto.response.PermissionResponse;
 import com.ecommerce_app.entity.Permission;
 import org.mapstruct.*;
 
@@ -10,14 +10,14 @@ import org.mapstruct.*;
 public interface PermissionMapper {
 
     /**
-     * Maps Permission entity to PermissionResponseDto
+     * Maps Permission entity to PermissionResponse
      */
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "createdAt", source = "createdAt")
     @Mapping(target = "updatedAt", source = "updatedAt")
-    PermissionResponseDto toResponseDto(Permission permission);
+    PermissionResponse toResponseDto(Permission permission);
 
     /**
      * Maps PermissionCreationRequestDto to Permission entity

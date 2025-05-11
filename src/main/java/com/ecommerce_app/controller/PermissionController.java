@@ -3,7 +3,7 @@ package com.ecommerce_app.controller;
 
 import com.ecommerce_app.dto.request.PermissionCreationRequestDto;
 import com.ecommerce_app.dto.request.PermissionUpdateRequestDto;
-import com.ecommerce_app.dto.response.PermissionResponseDto;
+import com.ecommerce_app.dto.response.PermissionResponse;
 import com.ecommerce_app.service.interfaces.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,38 +24,38 @@ public class PermissionController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PermissionResponseDto> createPermission(@Valid @RequestBody PermissionCreationRequestDto permissionCreationRequestDto) {
-        PermissionResponseDto createdPermission = permissionService.createPermission(permissionCreationRequestDto);
+    public ResponseEntity<PermissionResponse> createPermission(@Valid @RequestBody PermissionCreationRequestDto permissionCreationRequestDto) {
+        PermissionResponse createdPermission = permissionService.createPermission(permissionCreationRequestDto);
         return new ResponseEntity<>(createdPermission, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PermissionResponseDto> getPermissionById(@PathVariable Long id) {
-        PermissionResponseDto permission = permissionService.getPermissionById(id);
+    public ResponseEntity<PermissionResponse> getPermissionById(@PathVariable Long id) {
+        PermissionResponse permission = permissionService.getPermissionById(id);
         return ResponseEntity.ok(permission);
     }
 
     @GetMapping("/name/{name}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PermissionResponseDto> getPermissionByName(@PathVariable String name) {
-        PermissionResponseDto permission = permissionService.getPermissionByName(name);
+    public ResponseEntity<PermissionResponse> getPermissionByName(@PathVariable String name) {
+        PermissionResponse permission = permissionService.getPermissionByName(name);
         return ResponseEntity.ok(permission);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PermissionResponseDto>> getAllPermissions() {
-        List<PermissionResponseDto> permissions = permissionService.getAllPermissions();
+    public ResponseEntity<List<PermissionResponse>> getAllPermissions() {
+        List<PermissionResponse> permissions = permissionService.getAllPermissions();
         return ResponseEntity.ok(permissions);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PermissionResponseDto> updatePermission(
+    public ResponseEntity<PermissionResponse> updatePermission(
             @PathVariable Long id,
             @Valid @RequestBody PermissionUpdateRequestDto permissionUpdateRequestDto) {
-        PermissionResponseDto updatedPermission = permissionService.updatePermission(id, permissionUpdateRequestDto);
+        PermissionResponse updatedPermission = permissionService.updatePermission(id, permissionUpdateRequestDto);
         return ResponseEntity.ok(updatedPermission);
     }
 
@@ -75,8 +75,8 @@ public class PermissionController {
 
     @PostMapping("/names")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PermissionResponseDto>> getPermissionsByNames(@RequestBody Set<String> names) {
-        List<PermissionResponseDto> permissions = permissionService.getPermissionsByNames(names);
+    public ResponseEntity<List<PermissionResponse>> getPermissionsByNames(@RequestBody Set<String> names) {
+        List<PermissionResponse> permissions = permissionService.getPermissionsByNames(names);
         return ResponseEntity.ok(permissions);
     }
 }
