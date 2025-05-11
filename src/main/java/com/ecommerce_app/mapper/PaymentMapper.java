@@ -1,25 +1,29 @@
 package com.ecommerce_app.mapper;
 
-import com.ecommerce_app.dto.request.PaymentRequest;
+
+import com.ecommerce_app.dto.request.PaymentCreationRequest;
+import com.ecommerce_app.dto.request.PaymentUpdateRequest;
 import com.ecommerce_app.dto.response.PaymentResponse;
+import com.ecommerce_app.entity.Order;
 import com.ecommerce_app.entity.Payment;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PaymentMapper {
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "order", source = "order")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    Payment toEntity(PaymentCreationRequest dto, Order order);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "order", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updatePaymentFromDto(PaymentUpdateRequest dto, @MappingTarget Payment payment);
+
     @Mapping(target = "orderId", source = "order.id")
-    PaymentResponse paymentToPaymentResponse(Payment payment);
-
-    @Mapping(target = "status", constant = "PENDING")
-    @Mapping(target = "transactionId", ignore = true)
-    @Mapping(target = "processedAt", ignore = true)
-    @Mapping(target = "failureReason", ignore = true)
-    Payment paymentRequestToPaymentEntity(PaymentRequest request);
-
-    List<PaymentResponse> paymentsToPaymentResponsesList(List<Payment> payments);
+    @Mapping(target = "orderNumber", source = "order.orderNumber")
+    PaymentResponse toDto(Payment payment);
 }

@@ -1,5 +1,4 @@
-package com.ecommerce_app.dto.response;
-
+package com.ecommerce_app.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,10 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentResponse {
-    Long id;
-    Long orderId;
-    String orderNumber;
+public class PaymentUpdateRequest {
     String paymentMethod;
     String paymentStatus;
     String transactionId;
@@ -22,6 +18,4 @@ public class PaymentResponse {
     String currency;
     String paymentDetails;
     LocalDateTime paymentDate;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 }
