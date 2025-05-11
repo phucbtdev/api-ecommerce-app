@@ -1,29 +1,35 @@
 package com.ecommerce_app.service.interfaces;
 
-
 import com.ecommerce_app.dto.request.CategoryCreationRequest;
 import com.ecommerce_app.dto.request.CategoryUpdateRequest;
+import com.ecommerce_app.dto.response.CategoryBasicResponse;
 import com.ecommerce_app.dto.response.CategoryResponse;
-import com.ecommerce_app.dto.response.PagedResponse;
+import com.ecommerce_app.dto.response.CategoryTreeResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
+import java.util.UUID;
 
 public interface CategoryService {
 
-    PagedResponse<CategoryResponse> getAllCategories(int page, int size, String sortBy, String sortDir);
+    CategoryResponse createCategory(CategoryCreationRequest request);
 
-    PagedResponse<CategoryResponse> searchCategories(String name, Boolean isActive, int page, int size);
+    CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request);
 
-    List<CategoryResponse> getAllActiveCategories();
-
-    CategoryResponse getCategoryById(Long id);
+    CategoryResponse getCategoryById(UUID id);
 
     CategoryResponse getCategoryBySlug(String slug);
 
-    CategoryResponse createCategory(CategoryCreationRequest categoryCreationRequest);
+    Page<CategoryResponse> getAllCategories(Pageable pageable);
 
-    CategoryResponse updateCategory(Long id, CategoryUpdateRequest categoryUpdateRequest);
+    List<CategoryBasicResponse> getAllCategoriesBasic();
 
-    void deleteCategory(Long id);
+    List<CategoryTreeResponse> getCategoryTree();
 
-    CategoryResponse toggleCategoryStatus(Long id);
+    List<CategoryResponse> getSubcategories(UUID parentId);
+
+    void deleteCategory(UUID id);
+
+    CategoryResponse moveCategory(UUID categoryId, UUID newParentId);
 }

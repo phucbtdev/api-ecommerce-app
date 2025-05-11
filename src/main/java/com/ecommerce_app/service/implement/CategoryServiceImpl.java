@@ -1,178 +1,300 @@
 package com.ecommerce_app.service.implement;
 
-
 import com.ecommerce_app.dto.request.CategoryCreationRequest;
 import com.ecommerce_app.dto.request.CategoryUpdateRequest;
+import com.ecommerce_app.dto.response.CategoryBasicResponse;
 import com.ecommerce_app.dto.response.CategoryResponse;
-import com.ecommerce_app.dto.response.PagedResponse;
+import com.ecommerce_app.dto.response.CategoryTreeResponse;
 import com.ecommerce_app.entity.Category;
-import com.ecommerce_app.exception.BadRequestException;
+import com.ecommerce_app.exception.ResourceAlreadyExistsException;
 import com.ecommerce_app.exception.ResourceNotFoundException;
 import com.ecommerce_app.mapper.CategoryMapper;
 import com.ecommerce_app.repository.CategoryRepository;
 import com.ecommerce_app.service.interfaces.CategoryService;
-import com.ecommerce_app.service.validation.ValidationService;
+import com.ecommerce_app.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final ValidationService validationService;
 
     @Override
-    public PagedResponse<CategoryResponse> getAllCategories(int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+    public CategoryResponse createCategory(CategoryCreationRequest request) {
+        log.info("Creating new category with name: {}", request.getName());
 
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Category> categoriesPage = categoryRepository.findAll(pageable);
-
-        List<CategoryResponse> content = categoryMapper.toResponseList(categoriesPage.getContent());
-
-        return PagedResponse.of(
-                content,
-                categoriesPage.getNumber(),
-                categoriesPage.getSize(),
-                categoriesPage.getTotalElements(),
-                categoriesPage.getTotalPages(),
-                categoriesPage.isLast()
-        );
-    }
-
-    @Override
-    public PagedResponse<CategoryResponse> searchCategories(String name, Boolean isActive, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Category> categoriesPage = categoryRepository.findByFilters(name, isActive, pageable);
-
-        List<CategoryResponse> content = categoryMapper.toResponseList(categoriesPage.getContent());
-
-        return PagedResponse.of(
-                content,
-                categoriesPage.getNumber(),
-                categoriesPage.getSize(),
-                categoriesPage.getTotalElements(),
-                categoriesPage.getTotalPages(),
-                categoriesPage.isLast()
-        );
-    }
-
-    @Override
-    public List<CategoryResponse> getAllActiveCategories() {
-        List<Category> categories = categoryRepository.findAllActive();
-        return categoryMapper.toResponseList(categories);
-    }
-
-    @Override
-    public CategoryResponse getCategoryById(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
-        return categoryMapper.toEntity(category);
-    }
-
-    @Override
-    public CategoryResponse getCategoryBySlug(String slug) {
-        Category category = categoryRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "slug", slug));
-        return categoryMapper.toEntity(category);
-    }
-
-    @Override
-    @Transactional
-    public CategoryResponse createCategory(CategoryCreationRequest categoryCreationRequest) {
-        validationService.validateCategoryNameUnique(categoryCreationRequest.getName());
-
-        if (categoryCreationRequest.getSlug() == null || categoryCreationRequest.getSlug().isEmpty()) {
-            categoryCreationRequest.setSlug(generateSlug(categoryCreationRequest.getName()));
-        } else {
-            validationService.validateCategorySlugUnique(categoryCreationRequest.getSlug());
+        // Validate unique name
+        if (categoryRepository.existsByName(request.getName())) {
+            throw new ResourceAlreadyExistsException("Category");
         }
 
-        Category category = categoryMapper.toEntity(categoryCreationRequest);
+        Category category = categoryMapper.toEntity(request);
+
+        // Generate slug if not provided
+        if (category.getSlug() == null || category.getSlug().isEmpty()) {
+            category.setSlug(SlugUtil.generateSlug(category.getName()));
+        }
+
+        // Validate unique slug
+        if (categoryRepository.existsBySlug(category.getSlug())) {
+            category.setSlug(category.getSlug() + "-" + System.currentTimeMillis());
+        }
+
+        // Set parent category if provided
+        if (request.getParentId() != null) {
+            Category parentCategory = findCategoryById(request.getParentId());
+            category.setParent(parentCategory);
+        }
+
+        // Set timestamps
+        LocalDateTime now = LocalDateTime.now();
+        category.setCreatedAt(now);
+        category.setUpdatedAt(now);
+
         Category savedCategory = categoryRepository.save(category);
-        return categoryMapper.toEntity(savedCategory);
+        log.info("Category created successfully with ID: {}", savedCategory.getId());
+
+        CategoryResponse response = categoryMapper.toResponseDto(savedCategory);
+        response.setProductCount(0); // New category has no products
+
+        return response;
     }
 
-    @Transactional
     @Override
-    public CategoryResponse updateCategory(Long id, CategoryUpdateRequest categoryUpdateRequest) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+    public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request) {
+        log.info("Updating category with ID: {}", id);
 
-        // Check if name is being changed and if it's unique
-        if (!category.getName().equals(categoryUpdateRequest.getName())) {
-            validationService.validateCategoryNameUnique(categoryUpdateRequest.getName());
+        Category category = findCategoryById(id);
+
+        // Check name uniqueness if changed
+        if (request.getName() != null && !request.getName().equals(category.getName()) &&
+                categoryRepository.existsByName(request.getName())) {
+            throw new ResourceAlreadyExistsException("Category");
         }
 
-        // Generate slug if not provided or check if unique if changed
-        if (categoryUpdateRequest.getSlug() == null || categoryUpdateRequest.getSlug().isEmpty()) {
-            categoryUpdateRequest.setSlug(generateSlug(categoryUpdateRequest.getName()));
-        } else if (!category.getSlug().equals(categoryUpdateRequest.getSlug())) {
-            validationService.validateCategorySlugUnique(categoryUpdateRequest.getSlug());
+        // Update the slug if name is changed
+        if (request.getName() != null && !request.getName().equals(category.getName()) &&
+                (request.getSlug() == null || request.getSlug().isEmpty())) {
+            request.setSlug(SlugUtil.generateSlug(request.getName()));
         }
 
-        // Update fields
-        category.setName(categoryUpdateRequest.getName());
-        category.setDescription(categoryUpdateRequest.getDescription());
-        category.setSlug(categoryUpdateRequest.getSlug());
-
-        if (categoryUpdateRequest.getIsActive() != null) {
-            category.setIsActive(categoryUpdateRequest.getIsActive());
+        // Check slug uniqueness if changed
+        if (request.getSlug() != null && !request.getSlug().equals(category.getSlug()) &&
+                categoryRepository.existsBySlug(request.getSlug())) {
+            request.setSlug(request.getSlug() + "-" + System.currentTimeMillis());
         }
+
+        categoryMapper.updateEntityFromDto(request, category);
+
+        // Update parent category if specified
+        if (request.getParentId() != null) {
+            // Cannot set self as parent
+            if (request.getParentId().equals(id)) {
+                throw new IllegalArgumentException("Category cannot be its own parent");
+            }
+
+            // Check for circular reference
+            if (request.getParentId() != null && isCircularReference(id, request.getParentId())) {
+                throw new IllegalArgumentException("Setting this parent would create a circular reference");
+            }
+
+            Category parentCategory = findCategoryById(request.getParentId());
+            category.setParent(parentCategory);
+        } else if (request.getParentId() == null && request.getParentId() != category.getParent().getId()) {
+            // If parent ID is explicitly set to null, remove parent
+            category.setParent(null);
+        }
+
+        // Update timestamp
+        category.setUpdatedAt(LocalDateTime.now());
 
         Category updatedCategory = categoryRepository.save(category);
-        return categoryMapper.toEntity(updatedCategory);
+        log.info("Category updated successfully with ID: {}", updatedCategory.getId());
+
+        CategoryResponse response = categoryMapper.toResponseDto(updatedCategory);
+        response.setProductCount(categoryRepository.countProductsByCategoryId(id));
+
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryById(UUID id) {
+        log.info("Fetching category with ID: {}", id);
+        Category category = findCategoryById(id);
+
+        CategoryResponse response = categoryMapper.toResponseDto(category);
+        response.setProductCount(categoryRepository.countProductsByCategoryId(id));
+
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryBySlug(String slug) {
+        log.info("Fetching category with slug: {}", slug);
+
+        Category category = categoryRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Category"));
+
+        CategoryResponse response = categoryMapper.toResponseDto(category);
+        response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
+
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CategoryResponse> getAllCategories(Pageable pageable) {
+        log.info("Fetching all categories with pagination");
+
+        return categoryRepository.findAll(pageable)
+                .map(category -> {
+                    CategoryResponse response = categoryMapper.toResponseDto(category);
+                    response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
+                    return response;
+                });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryBasicResponse> getAllCategoriesBasic() {
+        log.info("Fetching all categories without pagination (basic info)");
+
+        return categoryRepository.findAll().stream()
+                .map(categoryMapper::toBasicResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryTreeResponse> getCategoryTree() {
+        log.info("Fetching category tree");
+
+        // Get all root categories (categories without parent)
+        List<Category> rootCategories = categoryRepository.findAllRootCategories();
+
+        return rootCategories.stream()
+                .map(categoryMapper::toTreeResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getSubcategories(UUID parentId) {
+        log.info("Fetching subcategories for parent ID: {}", parentId);
+
+        // Verify parent exists
+        findCategoryById(parentId);
+
+        List<Category> subcategories = categoryRepository.findAllByParentId(parentId);
+
+        return subcategories.stream()
+                .map(category -> {
+                    CategoryResponse response = categoryMapper.toResponseDto(category);
+                    response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteCategory(UUID id) {
+        log.info("Deleting category with ID: {}", id);
+
+        Category category = findCategoryById(id);
+
+        // Check if category has subcategories
+        if (!category.getSubcategories().isEmpty()) {
+            log.warn("Cannot delete category with ID: {} as it has subcategories", id);
+            throw new IllegalStateException("Cannot delete category as it has subcategories");
+        }
 
         // Check if category has products
-        if (!category.getProducts().isEmpty()) {
-            throw new BadRequestException("Cannot delete category with associated products");
+        int productCount = categoryRepository.countProductsByCategoryId(id);
+        if (productCount > 0) {
+            log.warn("Cannot delete category with ID: {} as it has associated products", id);
+            throw new IllegalStateException("Cannot delete category as it has associated products");
         }
 
         categoryRepository.delete(category);
+        log.info("Category deleted successfully with ID: {}", id);
     }
 
     @Override
-    @Transactional
-    public CategoryResponse toggleCategoryStatus(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+    public CategoryResponse moveCategory(UUID categoryId, UUID newParentId) {
+        log.info("Moving category ID: {} to new parent ID: {}", categoryId, newParentId);
 
-        category.setIsActive(!category.getIsActive());
-        Category updatedCategory = categoryRepository.save(category);
-        return categoryMapper.toEntity(updatedCategory);
-    }
+        Category category = findCategoryById(categoryId);
 
-    private String generateSlug(String name) {
-        String baseSlug = name.toLowerCase()
-                .replaceAll("\\s+", "-")
-                .replaceAll("[^a-z0-9-]", "");
+        // If newParentId is null, make it a root category
+        if (newParentId == null) {
+            category.setParent(null);
+        } else {
+            // Cannot set self as parent
+            if (categoryId.equals(newParentId)) {
+                throw new IllegalArgumentException("Category cannot be its own parent");
+            }
 
-        String slug = baseSlug;
-        int counter = 1;
+            // Check for circular reference
+            if (isCircularReference(categoryId, newParentId)) {
+                throw new IllegalArgumentException("Moving to this parent would create a circular reference");
+            }
 
-        while (categoryRepository.existsBySlug(slug)) {
-            slug = baseSlug + "-" + counter;
-            counter++;
+            Category newParent = findCategoryById(newParentId);
+            category.setParent(newParent);
         }
 
-        return slug;
+        category.setUpdatedAt(LocalDateTime.now());
+        Category updatedCategory = categoryRepository.save(category);
+
+        log.info("Category moved successfully with ID: {}", updatedCategory.getId());
+
+        CategoryResponse response = categoryMapper.toResponseDto(updatedCategory);
+        response.setProductCount(categoryRepository.countProductsByCategoryId(categoryId));
+
+        return response;
+    }
+
+    // Helper methods
+
+    private Category findCategoryById(UUID id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException( "Category id"));
+    }
+
+    private boolean isCircularReference(UUID categoryId, UUID potentialParentId) {
+        // If the potential parent is the category itself, it's circular
+        if (categoryId.equals(potentialParentId)) {
+            return true;
+        }
+
+        // Get the potential parent
+        Category potentialParent = findCategoryById(potentialParentId);
+
+        // Traverse up the hierarchy to check if we encounter the category
+        Category current = potentialParent.getParent();
+        while (current != null) {
+            if (current.getId().equals(categoryId)) {
+                return true;
+            }
+            current = current.getParent();
+        }
+
+        return false;
     }
 }

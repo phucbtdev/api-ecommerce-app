@@ -7,25 +7,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryCreationRequest {
 
-    private Long id;
-
-    @NotBlank(message = "Category name is required")
-    @Size(min = 3, max = 100, message = "Category name must be between 3 and 100 characters")
+    @NotBlank(message = "Category name cannot be empty")
     private String name;
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
-
 
     private String slug;
 
-    private Boolean isActive;
+    private String imageUrl;
 
-    private Long productCount;
+    private UUID parentId;
 }

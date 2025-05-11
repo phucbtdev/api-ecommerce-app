@@ -5,6 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,7 +23,15 @@ public class CategoryResponse {
 
     private String slug;
 
-    private Boolean isActive;
+    private String imageUrl;
 
-    private Long productCount;
+    private CategoryBasicResponse parent;
+
+    private Set<CategoryBasicResponse> subcategories = new HashSet<>();
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private int productCount;
 }

@@ -1,121 +1,89 @@
 package com.ecommerce_app.controller;
 
-
 import com.ecommerce_app.dto.request.CategoryCreationRequest;
 import com.ecommerce_app.dto.request.CategoryUpdateRequest;
-import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.CategoryBasicResponse;
 import com.ecommerce_app.dto.response.CategoryResponse;
-import com.ecommerce_app.dto.response.PagedResponse;
+import com.ecommerce_app.dto.response.CategoryTreeResponse;
 import com.ecommerce_app.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping
-    public ResponseEntity<PagedResponse<CategoryResponse>> getAllCategories(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
-
-        PagedResponse<CategoryResponse> response = categoryService.getAllCategories(page, size, sortBy, sortDir);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<PagedResponse<CategoryResponse>> searchCategories(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean isActive,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-
-        PagedResponse<CategoryResponse> response = categoryService.searchCategories(name, isActive, page, size);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/active")
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllActiveCategories() {
-        List<CategoryResponse> categories = categoryService.getAllActiveCategories();
-        return ResponseEntity.ok(ApiResponse.success(categories));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(
-            @PathVariable Long id
-    ) {
-
-        CategoryResponse categoryCreationRequest = categoryService.getCategoryById(id);
-        return ResponseEntity.ok(ApiResponse.success(categoryCreationRequest));
-    }
-
-    @GetMapping("/slug/{slug}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryBySlug(
-            @PathVariable String slug
-    ) {
-
-        CategoryResponse categoryCreationRequest = categoryService.getCategoryBySlug(slug);
-        return ResponseEntity.ok(ApiResponse.success(categoryCreationRequest));
-    }
-
     @PostMapping
-    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
-            @Valid @RequestBody CategoryCreationRequest categoryCreationRequest
-    ) {
-
-        CategoryResponse createdCategory = categoryService.createCategory(categoryCreationRequest);
-        return new ResponseEntity<>(ApiResponse.success("Category created successfully", createdCategory),
-                HttpStatus.CREATED);
+    @PreAuthorize("hasAuthority('CATEGORY_MANAGE')")
+    public ResponseEntity<CategoryResponse> createCategory(
+            @Valid @RequestBody CategoryCreationRequest request) {
+        return new ResponseEntity<>(categoryService.createCategory(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
-            @PathVariable Long id,
-            @Valid @RequestBody CategoryUpdateRequest categoryCreationRequest
-    ) {
+    @PreAuthorize("hasAuthority('CATEGORY_MANAGE')")
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable UUID id,
+            @Valid @RequestBody CategoryUpdateRequest request) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, request));
+    }
 
-        CategoryResponse updatedCategory = categoryService.updateCategory(id, categoryCreationRequest);
-        return ResponseEntity.ok(ApiResponse.success("Category updated successfully", updatedCategory));
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<CategoryResponse> getCategoryBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(categoryService.getCategoryBySlug(slug));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<CategoryResponse>> getAllCategories(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getAllCategories(pageable));
+    }
+
+    @GetMapping("/basic")
+    public ResponseEntity<List<CategoryBasicResponse>> getAllCategoriesBasic() {
+        return ResponseEntity.ok(categoryService.getAllCategoriesBasic());
+    }
+
+    @GetMapping("/tree")
+    public ResponseEntity<List<CategoryTreeResponse>> getCategoryTree() {
+        return ResponseEntity.ok(categoryService.getCategoryTree());
+    }
+
+    @GetMapping("/{parentId}/subcategories")
+    public ResponseEntity<List<CategoryResponse>> getSubcategories(@PathVariable UUID parentId) {
+        return ResponseEntity.ok(categoryService.getSubcategories(parentId));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteCategory(
-            @PathVariable Long id
-    ) {
-
+    @PreAuthorize("hasAuthority('CATEGORY_MANAGE')")
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.ok(ApiResponse.success("Category deleted successfully", null));
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/toggle-status")
-    public ResponseEntity<ApiResponse<CategoryResponse>> toggleCategoryStatus(
-            @PathVariable Long id
-    ) {
-
-        CategoryResponse categoryResponse = categoryService.toggleCategoryStatus(id);
-        String message = categoryResponse.getIsActive()
-                ? "Category activated successfully"
-                : "Category deactivated successfully";
-        return ResponseEntity.ok(ApiResponse.success(message, categoryResponse));
+    @PatchMapping("/{id}/move")
+    @PreAuthorize("hasAuthority('CATEGORY_MANAGE')")
+    public ResponseEntity<CategoryResponse> moveCategory(
+            @PathVariable UUID id,
+            @RequestParam(required = false) UUID parentId) {
+        return ResponseEntity.ok(categoryService.moveCategory(id, parentId));
     }
 }

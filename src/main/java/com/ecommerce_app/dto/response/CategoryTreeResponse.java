@@ -1,25 +1,24 @@
-package com.ecommerce_app.dto.request;
-
+package com.ecommerce_app.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryUpdateRequest {
+@Builder
+public class CategoryTreeResponse {
+    private Long id;
 
     private String name;
-
-    private String description;
 
     private String slug;
 
     private String imageUrl;
 
-    private UUID parentId;
+    private Set<CategoryTreeResponse> subcategories = new HashSet<>();
 }

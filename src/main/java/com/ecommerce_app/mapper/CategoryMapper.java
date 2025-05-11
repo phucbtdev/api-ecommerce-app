@@ -1,33 +1,47 @@
 package com.ecommerce_app.mapper;
 
 import com.ecommerce_app.dto.request.CategoryCreationRequest;
+import com.ecommerce_app.dto.request.CategoryUpdateRequest;
+import com.ecommerce_app.dto.response.CategoryBasicResponse;
 import com.ecommerce_app.dto.response.CategoryResponse;
+import com.ecommerce_app.dto.response.CategoryTreeResponse;
 import com.ecommerce_app.entity.Category;
-import com.ecommerce_app.mapper.config.MapperConfiguration;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
-import java.util.List;
+import java.util.Set;
 
-@Mapper(config = MapperConfiguration.class)
+@Mapper(
+        componentModel = "spring",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
 public interface CategoryMapper {
 
-    @Mapping(target = "productCount", ignore = true)
-    CategoryResponse toEntity(Category category);
-
-    List<CategoryResponse> toResponseList(List<Category> categories);
-
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "parent", ignore = true)
     @Mapping(target = "products", ignore = true)
-    Category toEntity(CategoryCreationRequest categoryCreationRequest);
+    @Mapping(target = "subcategories", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    Category toEntity(CategoryCreationRequest dto);
 
-    @AfterMapping
-    default void mapProductCount(@MappingTarget CategoryCreationRequest categoryCreationRequest, Category category) {
-        if (category.getProducts() != null) {
-            categoryCreationRequest.setProductCount((long) category.getProducts().size());
-        } else {
-            categoryCreationRequest.setProductCount(0L);
-        }
-    }
+    @Mapping(target = "parent", ignore = true)
+    @Mapping(target = "products", ignore = true)
+    @Mapping(target = "subcategories", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromDto(CategoryUpdateRequest dto, @MappingTarget Category entity);
+
+    @Mapping(target = "parent", source = "parent")
+    @Mapping(target = "subcategories", source = "subcategories")
+    @Mapping(target = "productCount", ignore = true)
+    CategoryResponse toResponseDto(Category entity);
+
+    CategoryBasicResponse toBasicResponseDto(Category entity);
+
+    @Mapping(target = "subcategories", source = "subcategories")
+    CategoryTreeResponse toTreeResponseDto(Category entity);
+
+    Set<CategoryBasicResponse> toBasicResponseDtoSet(Set<Category> categories);
+
+    Set<CategoryTreeResponse> toTreeResponseDtoSet(Set<Category> categories);
 }
