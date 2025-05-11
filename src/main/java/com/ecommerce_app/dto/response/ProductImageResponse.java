@@ -6,33 +6,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryResponse {
-
+public class ProductImageResponse {
     private UUID id;
-
-    private String name;
-
-    private String description;
-
-    private String slug;
-
     private String imageUrl;
-
-    private CategoryBasicResponse parent;
-
-    private Set<CategoryBasicResponse> subcategories = new HashSet<>();
-
+    private String alt;
+    private Integer sortOrder;
+    private Boolean isMain;
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
-    private int productCount;
+    private UUID variantId;
 }

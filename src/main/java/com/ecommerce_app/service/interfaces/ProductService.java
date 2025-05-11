@@ -2,39 +2,34 @@ package com.ecommerce_app.service.interfaces;
 
 import com.ecommerce_app.dto.request.ProductCreationRequest;
 import com.ecommerce_app.dto.request.ProductUpdateRequest;
-import com.ecommerce_app.dto.response.PagedResponse;
+import com.ecommerce_app.dto.response.ProductBasicResponse;
 import com.ecommerce_app.dto.response.ProductResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
+import java.util.UUID;
 
 public interface ProductService {
 
-    PagedResponse<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortDir);
+    ProductResponse createProduct(ProductCreationRequest request);
 
-    PagedResponse<ProductResponse> searchProducts(
-            String name,
-            Long categoryId,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Boolean isActive,
-            int page,
-            int size);
+    ProductResponse updateProduct(UUID id, ProductUpdateRequest request);
 
-    PagedResponse<ProductResponse> getProductsByCategoryId(Long categoryId, int page, int size);
-
-    ProductResponse getProductById(Long id);
+    ProductResponse getProductById(UUID id);
 
     ProductResponse getProductBySlug(String slug);
 
-    ProductResponse getProductBySku(String sku);
+    Page<ProductBasicResponse> getAllProducts(Pageable pageable);
 
-    ProductResponse createProduct(ProductCreationRequest productCreationRequest);
+    Page<ProductBasicResponse> getActiveProducts(Pageable pageable);
 
-    ProductResponse updateProduct(Long id, ProductUpdateRequest productUpdateRequest);
+    Page<ProductBasicResponse> getProductsByCategory(UUID categoryId, Pageable pageable);
 
-    void deleteProduct(Long id);
+    Page<ProductBasicResponse> getProductsByTag(UUID tagId, Pageable pageable);
 
-    ProductResponse toggleProductStatus(Long id);
+    Page<ProductBasicResponse> searchProducts(String keyword, Pageable pageable);
 
-    ProductResponse updateProductStock(Long id, Integer quantity);
+    void deleteProduct(UUID id);
+
+    boolean toggleProductActive(UUID id);
 }

@@ -2,27 +2,24 @@ package com.ecommerce_app.service.implement;
 
 import com.ecommerce_app.dto.request.ProductCreationRequest;
 import com.ecommerce_app.dto.request.ProductUpdateRequest;
-import com.ecommerce_app.dto.response.PagedResponse;
+import com.ecommerce_app.dto.response.ProductBasicResponse;
 import com.ecommerce_app.dto.response.ProductResponse;
-import com.ecommerce_app.entity.Category;
-import com.ecommerce_app.entity.Product;
-import com.ecommerce_app.exception.BadRequestException;
+import com.ecommerce_app.entity.*;
 import com.ecommerce_app.exception.ResourceNotFoundException;
 import com.ecommerce_app.mapper.ProductMapper;
-import com.ecommerce_app.repository.CategoryRepository;
-import com.ecommerce_app.repository.ProductRepository;
+import com.ecommerce_app.repository.*;
 import com.ecommerce_app.service.interfaces.ProductService;
-import com.ecommerce_app.service.validation.ValidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,212 +27,200 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
     private final ProductMapper productMapper;
-    private final ValidationService validationService;
 
     @Override
-    public PagedResponse<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+    @Transactional
+    public ProductResponse createProduct(ProductCreationRequest request) {
+        // Generate slug if not provided
+        if (request.getSlug() == null || request.getSlug().isEmpty()) {
+            request.setSlug(generateSlug(request.getName()));
+        }
 
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.findAll(pageable);
+        // Verify slug uniqueness
+        if (productRepository.existsBySlug(request.getSlug())) {
+            throw new IllegalArgumentException("Product with this slug already exists");
+        }
 
-        List<ProductResponse> content = productMapper.productsToProductResponses(productsPage.getContent());
+        // Verify SKU uniqueness if provided
+        if (request.getSku() != null && !request.getSku().isEmpty() &&
+                productRepository.existsBySku(request.getSku())) {
+            throw new IllegalArgumentException("Product with this SKU already exists");
+        }
 
-        return PagedResponse.of(
-                content,
-                productsPage.getNumber(),
-                productsPage.getSize(),
-                productsPage.getTotalElements(),
-                productsPage.getTotalPages(),
-                productsPage.isLast()
-        );
+        // Fetch categories
+        Set<Category> categories = fetchCategories(request.getCategoryIds());
+
+        // Fetch tags
+        Set<Tag> tags = fetchTags(request.getTagIds());
+
+        // Map DTO to entity
+        Product product = productMapper.toEntity(request);
+        product.setCategories(categories);
+        product.setTags(tags);
+
+        // Set default values if needed
+        if (product.getActive() == null) {
+            product.setActive(true);
+        }
+
+        // Save product
+        product = productRepository.save(product);
+
+        // Process variants and images (these would be handled by their respective services)
+        // This would be implemented in a real application with proper services
+
+        return productMapper.toDto(product);
     }
 
     @Override
-    public PagedResponse<ProductResponse> searchProducts(
-            String name,
-            Long categoryId,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Boolean isActive,
-            int page,
-            int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Product> productsPage = productRepository.findByFilters(
-                name, categoryId, minPrice, maxPrice, isActive, pageable);
-
-        List<ProductResponse> content = productMapper.productsToProductResponses(productsPage.getContent());
-
-        return PagedResponse.of(
-                content,
-                productsPage.getNumber(),
-                productsPage.getSize(),
-                productsPage.getTotalElements(),
-                productsPage.getTotalPages(),
-                productsPage.isLast()
-        );
-    }
-
-    @Override
-    public PagedResponse<ProductResponse> getProductsByCategoryId(Long categoryId, int page, int size) {
-        // Check if category exists
-        categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId));
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Product> productsPage = productRepository.findByCategoryId(categoryId, pageable);
-
-        List<ProductResponse> content = productMapper.productsToProductResponses(productsPage.getContent());
-
-        return PagedResponse.of(
-                content,
-                productsPage.getNumber(),
-                productsPage.getSize(),
-                productsPage.getTotalElements(),
-                productsPage.getTotalPages(),
-                productsPage.isLast()
-        );
-    }
-
-    @Override
-    public ProductResponse getProductById(Long id) {
+    @Transactional
+    public ProductResponse updateProduct(UUID id, ProductUpdateRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-        return productMapper.productToProductResponse(product);
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // Verify slug uniqueness if changing
+        if (request.getSlug() != null && !request.getSlug().equals(product.getSlug()) &&
+                productRepository.existsBySlug(request.getSlug())) {
+            throw new IllegalArgumentException("Product with this slug already exists");
+        }
+
+        // Verify SKU uniqueness if changing
+        if (request.getSku() != null && !request.getSku().equals(product.getSku()) &&
+                !request.getSku().isEmpty() && productRepository.existsBySku(request.getSku())) {
+            throw new IllegalArgumentException("Product with this SKU already exists");
+        }
+
+        // Update categories if provided
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            Set<Category> categories = fetchCategories(request.getCategoryIds());
+            product.setCategories(categories);
+        }
+
+        // Update tags if provided
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            Set<Tag> tags = fetchTags(request.getTagIds());
+            product.setTags(tags);
+        }
+
+        // Update fields from DTO
+        productMapper.updateEntityFromDto(request, product);
+        product.setUpdatedAt(LocalDateTime.now());
+
+        // Save updated product
+        product = productRepository.save(product);
+
+        return productMapper.toDto(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getProductById(UUID id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        return productMapper.toDto(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
-        return productMapper.productToProductResponse(product);
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
+        return productMapper.toDto(product);
     }
 
     @Override
-    public ProductResponse getProductBySku(String sku) {
-        Product product = productRepository.findBySku(sku)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "sku", sku));
-        return productMapper.productToProductResponse(product);
+    @Transactional(readOnly = true)
+    public Page<ProductBasicResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(productMapper::toBasicDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductBasicResponse> getActiveProducts(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable)
+                .map(productMapper::toBasicDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductBasicResponse> getProductsByCategory(UUID categoryId, Pageable pageable) {
+        return productRepository.findByCategoryId(categoryId, pageable)
+                .map(productMapper::toBasicDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductBasicResponse> getProductsByTag(UUID tagId, Pageable pageable) {
+        return productRepository.findByTagId(tagId, pageable)
+                .map(productMapper::toBasicDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductBasicResponse> searchProducts(String keyword, Pageable pageable) {
+        return productRepository.searchByKeyword(keyword, pageable)
+                .map(productMapper::toBasicDto);
     }
 
     @Override
     @Transactional
-    public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
-        // Validate category exists
-        Category category = categoryRepository.findById(productCreationRequest.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", productCreationRequest.getCategoryId()));
-
-        // Validate SKU uniqueness
-        validationService.validateProductSkuUnique(productCreationRequest.getSku());
-
-        // Generate slug if not provided
-        if (productCreationRequest.getSlug() == null || productCreationRequest.getSlug().isEmpty()) {
-            productCreationRequest.setSlug(generateSlug(productCreationRequest.getName()));
-        } else {
-            validationService.validateProductSlugUnique(productCreationRequest.getSlug());
+    public void deleteProduct(UUID id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product not found with id: " + id);
         }
-
-        Product product = productMapper.toEntity(productCreationRequest);
-        product.setCategory(category);
-
-        Product savedProduct = productRepository.save(product);
-        return productMapper.productToProductResponse(savedProduct);
+        productRepository.deleteById(id);
     }
 
     @Override
     @Transactional
-    public ProductResponse updateProduct(Long id, ProductUpdateRequest productUpdateRequest) {
+    public boolean toggleProductActive(UUID id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-
-        // Check if category exists if it's being changed
-        if (!product.getCategory().getId().equals(productUpdateRequest.getCategoryId())) {
-            Category category = categoryRepository.findById(productUpdateRequest.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category", "id", productUpdateRequest.getCategoryId()));
-            product.setCategory(category);
-        }
-
-        // Check if SKU is being changed and if it's unique
-        if (!product.getSku().equals(productUpdateRequest.getSku())) {
-            validationService.validateProductSkuUnique(productUpdateRequest.getSku());
-        }
-
-        // Generate slug if not provided or check if unique if changed
-        if (productUpdateRequest.getSlug() == null || productUpdateRequest.getSlug().isEmpty()) {
-            productUpdateRequest.setSlug(generateSlug(productUpdateRequest.getName()));
-        } else if (!product.getSlug().equals(productUpdateRequest.getSlug())) {
-            validationService.validateProductSlugUnique(productUpdateRequest.getSlug());
-        }
-
-        // Update fields
-        product.setName(productUpdateRequest.getName());
-        product.setDescription(productUpdateRequest.getDescription());
-        product.setPrice(productUpdateRequest.getPrice());
-        product.setQuantity(productUpdateRequest.getQuantity());
-        product.setImageUrl(productUpdateRequest.getImageUrl());
-        product.setSlug(productUpdateRequest.getSlug());
-        product.setSku(productUpdateRequest.getSku());
-
-        if (productUpdateRequest.getIsActive() != null) {
-            product.setIsActive(productUpdateRequest.getIsActive());
-        }
-
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.productToProductResponse(updatedProduct);
-    }
-
-    @Override
-    @Transactional
-    public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-
-        productRepository.delete(product);
-    }
-
-    @Override
-    @Transactional
-    public ProductResponse toggleProductStatus(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-
-        product.setIsActive(!product.getIsActive());
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.productToProductResponse(updatedProduct);
-    }
-
-    @Override
-    @Transactional
-    public ProductResponse updateProductStock(Long id, Integer quantity) {
-        if (quantity < 0) {
-            throw new BadRequestException("Quantity cannot be negative");
-        }
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-
-        product.setQuantity(quantity);
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.productToProductResponse(updatedProduct);
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        product.setActive(!product.getActive());
+        product.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(product);
+        return product.getActive();
     }
 
     private String generateSlug(String name) {
-        String baseSlug = name.toLowerCase()
-                .replaceAll("\\s+", "-")
-                .replaceAll("[^a-z0-9-]", "");
+        // Simple slug generation - in a real app this would be more sophisticated
+        return name.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
+    }
 
-        String slug = baseSlug;
-        int counter = 1;
-
-        while (productRepository.existsBySlug(slug)) {
-            slug = baseSlug + "-" + counter;
-            counter++;
+    private Set<Category> fetchCategories(Set<UUID> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return new HashSet<>();
         }
 
-        return slug;
+        Set<Category> categories = categoryRepository.findAllById(categoryIds)
+                .stream()
+                .collect(Collectors.toSet());
+
+        if (categories.size() != categoryIds.size()) {
+            throw new ResourceNotFoundException("One or more categories not found");
+        }
+
+        return categories;
+    }
+
+    private Set<Tag> fetchTags(Set<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        Set<Tag> tags = tagRepository.findAllById(tagIds)
+                .stream()
+                .collect(Collectors.toSet());
+
+        if (tags.size() != tagIds.size()) {
+            throw new ResourceNotFoundException("One or more tags not found");
+        }
+
+        return tags;
     }
 }

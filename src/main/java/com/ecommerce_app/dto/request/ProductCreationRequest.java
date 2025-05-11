@@ -1,10 +1,7 @@
 package com.ecommerce_app.dto.request;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -19,10 +19,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ProductCreationRequest {
 
-    private Long id;
-
     @NotBlank(message = "Product name is required")
-    @Size(min = 3, max = 100, message = "Product name must be between 3 and 100 characters")
+    @Size(min = 2, max = 255, message = "Product name must be between 2 and 255 characters")
     private String name;
 
     @Size(max = 2000, message = "Description cannot exceed 2000 characters")
@@ -30,27 +28,28 @@ public class ProductCreationRequest {
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.01", message = "Price must be greater than 0")
+    @Digits(integer = 8, fraction = 2, message = "Price must have at most 8 digits in whole part and 2 digits in decimal part")
     private BigDecimal price;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 0, message = "Quantity cannot be negative")
-    private Integer quantity;
-
-    private String imageUrl;
-
+    @Pattern(regexp = "^[a-z0-9-]+$", message = "Slug must contain only lowercase letters, numbers, and hyphens")
     private String slug;
 
-    @NotBlank(message = "SKU is required")
     private String sku;
 
-    @NotNull(message = "Category ID is required")
-    private Long categoryId;
+    private Boolean active;
 
-    private String categoryName;
+    @DecimalMin(value = "0.0", message = "Weight cannot be negative")
+    private BigDecimal weight;
 
-    private Boolean isActive;
+    private String dimensions;
 
-    private LocalDateTime createdAt;
+    private Set<UUID> categoryIds = new HashSet<>();
 
-    private LocalDateTime updatedAt;
+    private Set<UUID> tagIds = new HashSet<>();
+
+    @Valid
+    private Set<ProductVariantCreationRequest> variants = new HashSet<>();
+
+    @Valid
+    private Set<ProductImageCreationRequest> images = new HashSet<>();
 }
