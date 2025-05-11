@@ -3,80 +3,108 @@ package com.ecommerce_app.controller;
 import com.ecommerce_app.dto.request.UserCreationRequest;
 import com.ecommerce_app.dto.request.UserUpdateRequest;
 import com.ecommerce_app.dto.response.UserResponse;
+import com.ecommerce_app.service.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
-        Page<UserResponse> users = userService.getAllUsers(pageable);
-        return ResponseEntity.ok(users);
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserCreationRequest userCreationDto) {
+        UserResponse createdUser = userService.createUser(userCreationDto);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(
-            @PathVariable Long id
-    ) {
-
+    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUser(#id)")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/byUsername/{username}")
-    public ResponseEntity<UserResponse> getUserByUsername(
-            @PathVariable String username
-    ) {
-
+    @GetMapping("/username/{username}")
+    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUsername(#username)")
+    public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
         UserResponse user = userService.getUserByUsername(username);
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(
-            @Valid @RequestBody UserCreationRequest userRequest
-    ) {
+    @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUserEmail(#email)")
+    public ResponseEntity<UserResponse> getUserByEmail(@PathVariable String email) {
+        UserResponse user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(user);
+    }
 
-        UserResponse createdUser = userService.createUser(userRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUser(#id)")
     public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UserUpdateRequest userUpdateRequest
-    ) {
-
-        UserResponse updatedUser = userService.updateUser(id, userUpdateRequest);
+            @PathVariable UUID id,
+            @Valid @RequestBody UserUpdateRequest userUpdateDto) {
+        UserResponse updatedUser = userService.updateUser(id, userUpdateDto);
         return ResponseEntity.ok(updatedUser);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(
-            @PathVariable Long id
-    ) {
+    @PatchMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> updateUserRoles(
+            @PathVariable UUID id,
+            @RequestBody Set<Long> roleIds) {
+        UserResponse updatedUser = userService.updateUserRoles(id, roleIds);
+        return ResponseEntity.ok(updatedUser);
+    }
 
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> activateUser(@PathVariable UUID id) {
+        UserResponse activatedUser = userService.activateUser(id);
+        return ResponseEntity.ok(activatedUser);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> deactivateUser(@PathVariable UUID id) {
+        UserResponse deactivatedUser = userService.deactivateUser(id);
+        return ResponseEntity.ok(deactivatedUser);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/profile")
-    public ResponseEntity<UserResponse> updateUserProfile(
-            @PathVariable Long id,
-            @Valid @RequestBody UserProfileUpdateRequest profileRequest
-    ) {
+    @GetMapping("/check/username/{username}")
+    public ResponseEntity<Boolean> checkUsernameExists(@PathVariable String username) {
+        boolean exists = userService.existsByUsername(username);
+        return ResponseEntity.ok(exists);
+    }
 
-        UserResponse updatedUser = userService.updateUserProfile(id, profileRequest);
-        return ResponseEntity.ok(updatedUser);
+    @GetMapping("/check/email/{email}")
+    public ResponseEntity<Boolean> checkEmailExists(@PathVariable String email) {
+        boolean exists = userService.existsByEmail(email);
+        return ResponseEntity.ok(exists);
     }
 }

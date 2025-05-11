@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -36,5 +35,5 @@ public class UserCreationRequest {
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number should be valid")
     private String phoneNumber;
 
-    private Set<UUID> roleIds;
+    private Set<Long> roleIds;
 }

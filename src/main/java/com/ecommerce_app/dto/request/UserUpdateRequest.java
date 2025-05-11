@@ -34,5 +34,5 @@ public class UserUpdateRequest {
 
     private Boolean active;
 
-    private Set<UUID> roleIds;
+    private Set<Long> roleIds;
 }

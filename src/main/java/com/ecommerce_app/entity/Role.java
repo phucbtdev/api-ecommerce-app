@@ -2,10 +2,7 @@ package com.ecommerce_app.entity;
 
 import jakarta.persistence.*;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
@@ -14,23 +11,17 @@ import java.util.Set;
 
 @Entity
 @Table(name = "roles")
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Role {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+public class Role extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     String name;
 
     String description;
-
-    LocalDateTime createdAt;
-
-    LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -43,14 +34,4 @@ public class Role {
     @ManyToMany(mappedBy = "roles")
     Set<User> users = new HashSet<>();
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }
