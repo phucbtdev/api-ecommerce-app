@@ -34,7 +34,7 @@ public interface CategoryMapper {
     @Mapping(target = "parent", source = "parent")
     @Mapping(target = "subcategories", source = "subcategories")
     @Mapping(target = "productCount", ignore = true)
-    CategoryResponse toResponseDto(Category entity);
+    CategoryResponse toResponse(Category entity);
 
     CategoryBasicResponse toBasicResponseDto(Category entity);
 

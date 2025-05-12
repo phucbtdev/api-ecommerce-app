@@ -68,7 +68,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category savedCategory = categoryRepository.save(category);
         log.info("Category created successfully with ID: {}", savedCategory.getId());
 
-        CategoryResponse response = categoryMapper.toResponseDto(savedCategory);
+        CategoryResponse response = categoryMapper.toResponse(savedCategory);
         response.setProductCount(0); // New category has no products
 
         return response;
@@ -125,7 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category updatedCategory = categoryRepository.save(category);
         log.info("Category updated successfully with ID: {}", updatedCategory.getId());
 
-        CategoryResponse response = categoryMapper.toResponseDto(updatedCategory);
+        CategoryResponse response = categoryMapper.toResponse(updatedCategory);
         response.setProductCount(categoryRepository.countProductsByCategoryId(id));
 
         return response;
@@ -137,7 +137,7 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Fetching category with ID: {}", id);
         Category category = findCategoryById(id);
 
-        CategoryResponse response = categoryMapper.toResponseDto(category);
+        CategoryResponse response = categoryMapper.toResponse(category);
         response.setProductCount(categoryRepository.countProductsByCategoryId(id));
 
         return response;
@@ -151,7 +151,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Category"));
 
-        CategoryResponse response = categoryMapper.toResponseDto(category);
+        CategoryResponse response = categoryMapper.toResponse(category);
         response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
 
         return response;
@@ -164,7 +164,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         return categoryRepository.findAll(pageable)
                 .map(category -> {
-                    CategoryResponse response = categoryMapper.toResponseDto(category);
+                    CategoryResponse response = categoryMapper.toResponse(category);
                     response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
                     return response;
                 });
@@ -205,7 +205,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         return subcategories.stream()
                 .map(category -> {
-                    CategoryResponse response = categoryMapper.toResponseDto(category);
+                    CategoryResponse response = categoryMapper.toResponse(category);
                     response.setProductCount(categoryRepository.countProductsByCategoryId(category.getId()));
                     return response;
                 })
@@ -264,7 +264,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         log.info("Category moved successfully with ID: {}", updatedCategory.getId());
 
-        CategoryResponse response = categoryMapper.toResponseDto(updatedCategory);
+        CategoryResponse response = categoryMapper.toResponse(updatedCategory);
         response.setProductCount(categoryRepository.countProductsByCategoryId(categoryId));
 
         return response;
