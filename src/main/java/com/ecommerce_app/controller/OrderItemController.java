@@ -1,7 +1,5 @@
 package com.ecommerce_app.controller;
 
-package com.ecommerce_app.controller;
-
 import com.ecommerce_app.dto.request.OrderItemCreationRequest;
 import com.ecommerce_app.dto.request.OrderItemUpdateRequest;
 import com.ecommerce_app.dto.response.OrderItemResponse;
@@ -17,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/orders/{orderId}/items")
+@RequestMapping("/orders/{orderId}/items")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderItemController {
