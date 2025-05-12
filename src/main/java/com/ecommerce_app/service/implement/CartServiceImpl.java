@@ -11,6 +11,7 @@ import com.ecommerce_app.exception.ResourceNotFoundException;
 import com.ecommerce_app.mapper.CartMapper;
 import com.ecommerce_app.repository.CartItemRepository;
 import com.ecommerce_app.repository.CartRepository;
+import com.ecommerce_app.repository.CouponRepository;
 import com.ecommerce_app.repository.UserRepository;
 import com.ecommerce_app.service.interfaces.CartService;
 import lombok.RequiredArgsConstructor;

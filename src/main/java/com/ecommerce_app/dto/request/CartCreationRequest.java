@@ -15,5 +15,5 @@ public class CartCreationRequest {
     @NotNull(message = "User ID is required")
     UUID userId;
 
-    Long couponId;
+    UUID couponId;
 }

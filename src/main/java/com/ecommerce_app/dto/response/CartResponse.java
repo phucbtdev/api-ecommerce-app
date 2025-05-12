@@ -15,12 +15,12 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartResponse {
-    Long id;
+    UUID id;
     UUID userId;
     String userName;
     Set<CartItemResponse> items = new HashSet<>();
     BigDecimal totalAmount;
-    Long couponId;
+    UUID couponId;
     String couponCode;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
