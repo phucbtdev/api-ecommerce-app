@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +38,7 @@ public class Order extends BaseEntity {
     String customerNotes;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    Set<OrderItem> items = new HashSet<>();
+    Set<OrderItem> orderItems = new HashSet<>();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     Payment payment;

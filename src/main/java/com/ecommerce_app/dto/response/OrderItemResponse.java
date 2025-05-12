@@ -6,17 +6,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class OrderItemResponse {
+    private UUID id;
+    private UUID orderId;
+    private String orderNumber;
 
-    private Long id;
-    private Long productId;
+    private UUID productId;
     private String productName;
-    private BigDecimal unitPrice;
+    private String productSku;
+    private String productImageUrl;
+
+    private UUID productVariantId;
+    private String variantName;
+    private String variantInfo;
+
     private Integer quantity;
-    private BigDecimal subtotal;
+    private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

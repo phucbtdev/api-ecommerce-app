@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentCreationRequest {
 
-    Long orderId;
+    UUID orderId;
     String paymentMethod;
     String paymentStatus;
     String transactionId;

@@ -1,7 +1,5 @@
 package com.ecommerce_app.dto.request;
 
-import com.ecommerce_app.entity.Order;
-import com.ecommerce_app.entity.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

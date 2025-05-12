@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShippingCreationRequest {
     @NotNull(message = "Order ID cannot be null")
-    Long orderId;
+    UUID orderId;
 
     @NotBlank(message = "Shipping method cannot be blank")
     @Size(max = 100, message = "Shipping method cannot exceed 100 characters")

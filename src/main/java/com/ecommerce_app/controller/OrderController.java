@@ -1,16 +1,21 @@
 package com.ecommerce_app.controller;
-
-import com.ecommerce_app.dto.request.CreateOrderRequest;
-import com.ecommerce_app.dto.request.UpdateOrderStatusRequest;
+import com.ecommerce_app.dto.request.OrderCreationRequest;
+import com.ecommerce_app.dto.request.OrderUpdateRequest;
 import com.ecommerce_app.dto.response.OrderResponse;
-import com.ecommerce_app.dto.response.PagedResponse;
-import com.ecommerce_app.entity.Order;
 import com.ecommerce_app.service.interfaces.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/orders")
@@ -20,74 +25,94 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
-            @Valid @RequestBody CreateOrderRequest createOrderRequest
-    ) {
-
-        return new ResponseEntity<>(orderService.createOrder(createOrderRequest), HttpStatus.CREATED);
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreationRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrderById(
-            @PathVariable Long id
-    ) {
-
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable UUID id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @GetMapping("/number/{orderNumber}")
-    public ResponseEntity<OrderResponse> getOrderByOrderNumber(
-            @PathVariable String orderNumber
-    ) {
-
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> getOrderByOrderNumber(@PathVariable String orderNumber) {
         return ResponseEntity.ok(orderService.getOrderByOrderNumber(orderNumber));
     }
 
-    @GetMapping
-    public ResponseEntity<PagedResponse<OrderResponse>> getAllOrders(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir
-    ) {
-
-        return ResponseEntity.ok(orderService.getAllOrders(pageNo, pageSize, sortBy, sortDir));
-    }
-
-    @GetMapping("/status/{status}")
-    public ResponseEntity<PagedResponse<OrderResponse>> getOrdersByStatus(
-            @PathVariable Order.OrderStatus status,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
-    ) {
-
-        return ResponseEntity.ok(orderService.getOrdersByStatus(status, pageNo, pageSize));
-    }
-
-    @GetMapping("/customer/{email}")
-    public ResponseEntity<PagedResponse<OrderResponse>> getOrdersByCustomerEmail(
-            @PathVariable String email,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
-    ) {
-
-        return ResponseEntity.ok(orderService.getOrdersByCustomerEmail(email, pageNo, pageSize));
-    }
-
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponse> updateOrderStatus(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateOrderStatusRequest updateOrderStatusRequest
-    ) {
-        return ResponseEntity.ok(orderService.updateOrderStatus(id, updateOrderStatusRequest));
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> updateOrder(
+            @PathVariable UUID id,
+            @Valid @RequestBody OrderUpdateRequest request) {
+        return ResponseEntity.ok(orderService.updateOrder(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(
-            @PathVariable Long id
-    ) {
-
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<OrderResponse>> getAllOrders(Pageable pageable) {
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Page<OrderResponse>> getOrdersByUser(
+            @PathVariable UUID userId,
+            Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByUser(userId, pageable));
+    }
+
+    @GetMapping("/status/{statusId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<OrderResponse>> getOrdersByStatus(
+            @PathVariable UUID statusId,
+            Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByStatus(statusId, pageable));
+    }
+
+    @GetMapping("/user/{userId}/status/{statusId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Page<OrderResponse>> getOrdersByUserAndStatus(
+            @PathVariable UUID userId,
+            @PathVariable UUID statusId,
+            Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByUserAndStatus(userId, statusId, pageable));
+    }
+
+    @GetMapping("/date-range")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<OrderResponse>> getOrdersInDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return ResponseEntity.ok(orderService.getOrdersInDateRange(startDate, endDate));
+    }
+
+    @PatchMapping("/{id}/status/{statusId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable UUID id,
+            @PathVariable UUID statusId) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, statusId));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable UUID id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
+    }
+
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> completeOrder(@PathVariable UUID id) {
+        return ResponseEntity.ok(orderService.completeOrder(id));
     }
 }
