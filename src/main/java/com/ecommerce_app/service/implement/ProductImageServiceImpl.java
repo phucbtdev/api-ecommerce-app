@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ProductImageServiceImpl implements ProductImageService {
+public class  ProductImageServiceImpl implements ProductImageService {
 
     private final ProductImageRepository imageRepository;
     private final ProductRepository productRepository;

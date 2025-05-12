@@ -204,8 +204,8 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     private BigDecimal determineUnitPrice(Product product, ProductVariant variant) {
         // If variant exists and has a price, use it
-        if (variant != null && variant.getPrice() != null) {
-            return variant.getPrice();
+        if (variant != null && variant.getProduct().getPrice() != null) {
+            return variant.getProduct().getPrice();
         }
 
         // Otherwise use product price
