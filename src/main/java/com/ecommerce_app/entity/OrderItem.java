@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Table(name = "order_items")
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
