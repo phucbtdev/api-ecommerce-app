@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user-activities")
+@RequestMapping("/user-activities")
 @RequiredArgsConstructor
 public class UserActivityController {
     private final UserActivityService userActivityService;
