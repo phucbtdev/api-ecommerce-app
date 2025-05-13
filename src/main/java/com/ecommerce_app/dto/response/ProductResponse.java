@@ -27,8 +27,16 @@ public class ProductResponse {
     private String dimensions;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Builder.Default
     private Set<CategoryResponse> categories = new HashSet<>();
+
+    @Builder.Default
     private Set<TagResponse> tags = new HashSet<>();
+
+    @Builder.Default
     private Set<ProductImageResponse> images = new HashSet<>();
+
+    @Builder.Default
     private Set<ProductVariantResponse> variants = new HashSet<>();
 }

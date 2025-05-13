@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CategoryTreeResponse {
-    private Long id;
+    private UUID id;
 
     private String name;
 
@@ -20,5 +21,6 @@ public class CategoryTreeResponse {
 
     private String imageUrl;
 
+    @Builder.Default
     private Set<CategoryTreeResponse> subcategories = new HashSet<>();
 }

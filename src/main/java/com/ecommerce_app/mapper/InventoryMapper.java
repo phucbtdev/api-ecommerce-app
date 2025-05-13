@@ -18,6 +18,11 @@ public interface InventoryMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "transactions", ignore = true)
     @Mapping(target = "productVariant", source = "productVariant")
+    @Mapping(target = "stockQuantity", source = "request.stockQuantity")
+    @Mapping(target = "reservedQuantity", source = "request.reservedQuantity")
+    @Mapping(target = "reorderLevel", source = "request.reorderLevel")
+    @Mapping(target = "sku", source = "request.sku") // chỉ rõ dùng sku từ request
+    @Mapping(target = "location", source = "request.location")
     Inventory toEntity(InventoryCreationRequest request, ProductVariant productVariant);
 
     @Mapping(target = "id", ignore = true)

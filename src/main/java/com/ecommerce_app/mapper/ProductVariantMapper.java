@@ -2,7 +2,9 @@ package com.ecommerce_app.mapper;
 
 import com.ecommerce_app.dto.request.ProductVariantCreationRequest;
 import com.ecommerce_app.dto.request.ProductVariantUpdateRequest;
+import com.ecommerce_app.dto.response.InventoryResponse;
 import com.ecommerce_app.dto.response.ProductVariantResponse;
+import com.ecommerce_app.dto.response.VariantAttributeResponse;
 import com.ecommerce_app.entity.*;
 import org.mapstruct.*;
 
@@ -51,9 +53,7 @@ public interface ProductVariantMapper {
     default void mapInventory(@MappingTarget ProductVariant entity, ProductVariantCreationRequest dto) {
         if (dto.getInventory() != null) {
             Inventory inventory = new Inventory();
-            inventory.setQuantity(dto.getInventory().getQuantity());
-            inventory.setBackorderAllowed(dto.getInventory().getBackorderAllowed());
-            inventory.setLowStockThreshold(dto.getInventory().getLowStockThreshold());
+            inventory.setStockQuantity(dto.getInventory().getStockQuantity());
             inventory.setProductVariant(entity);
             entity.setInventory(inventory);
         }
@@ -76,9 +76,7 @@ public interface ProductVariantMapper {
         }
         return InventoryResponse.builder()
                 .id(inventory.getId())
-                .quantity(inventory.getQuantity())
-                .backorderAllowed(inventory.getBackorderAllowed())
-                .lowStockThreshold(inventory.getLowStockThreshold())
+                .stockQuantity(inventory.getStockQuantity())
                 .build();
     }
 }

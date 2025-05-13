@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,5 +20,5 @@ public class VariantAttributeCreationRequest {
     private String value;
 
     @NotNull(message = "Variant ID is mandatory")
-    private java.util.UUID variantId;
+    private UUID variantId;
 }

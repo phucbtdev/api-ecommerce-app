@@ -4,6 +4,8 @@ import com.ecommerce_app.dto.request.OrderItemCreationRequest;
 import com.ecommerce_app.dto.request.OrderItemUpdateRequest;
 import com.ecommerce_app.dto.response.OrderItemResponse;
 import com.ecommerce_app.entity.OrderItem;
+import com.ecommerce_app.entity.Product;
+import com.ecommerce_app.entity.ProductImage;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
@@ -38,7 +40,7 @@ public interface OrderItemMapper {
     @Mapping(target = "productId", source = "product.id")
     @Mapping(target = "productName", source = "product.name")
     @Mapping(target = "productSku", source = "product.sku")
-    @Mapping(target = "productImageUrl", source = "product.mainImageUrl")
+    @Mapping(target = "productImageUrl", source = "product", qualifiedByName = "getMainProductImageUrl")
     @Mapping(target = "productVariantId", source = "productVariant.id")
     @Mapping(target = "variantName", source = "productVariant.name")
     OrderItemResponse toResponse(OrderItem orderItem);
@@ -50,5 +52,18 @@ public interface OrderItemMapper {
             response.setProductVariantId(null);
             response.setVariantName(null);
         }
+    }
+
+    @Named("getMainProductImageUrl")
+    default String getMainProductImageUrl(Product product) {
+        if (product == null || product.getImages() == null || product.getImages().isEmpty()) {
+            return null;
+        }
+
+        return product.getImages().stream()
+                .filter(ProductImage::getIsMain)
+                .findFirst()
+                .map(ProductImage::getImageUrl)
+                .orElse(null);
     }
 }

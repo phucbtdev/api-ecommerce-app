@@ -23,6 +23,11 @@ public interface ReviewMapper {
      */
     @Mapping(target = "product", source = "product")
     @Mapping(target = "user", source = "user")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "published", ignore = true)
+    @Mapping(target = "verified", ignore = true)
     Review toEntity(ReviewCreationRequest request, Product product, User user);
 
     /**
@@ -41,6 +46,11 @@ public interface ReviewMapper {
      * @param request The ReviewUpdateRequest DTO
      * @param review  The Review entity to update
      */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "product", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromRequest(ReviewUpdateRequest request, @MappingTarget Review review);
 }

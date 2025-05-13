@@ -3,6 +3,7 @@ package com.ecommerce_app.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@SuperBuilder
 public class Wishlist extends BaseEntity {
 
     @OneToOne
@@ -28,5 +30,6 @@ public class Wishlist extends BaseEntity {
             joinColumns = @JoinColumn(name = "wishlist_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
+    @Builder.Default
     Set<Product> products = new HashSet<>();
 }

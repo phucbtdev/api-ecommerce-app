@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +47,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional
-    public ShippingResponse updateShipping(Long id, ShippingUpdateRequest shippingUpdateRequest) {
+    public ShippingResponse updateShipping(UUID id, ShippingUpdateRequest shippingUpdateRequest) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with id: " + id));
 
@@ -58,7 +59,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional(readOnly = true)
-    public ShippingResponse getShippingById(Long id) {
+    public ShippingResponse getShippingById(UUID id) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with id: " + id));
 
@@ -67,7 +68,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional(readOnly = true)
-    public ShippingResponse getShippingByOrderId(Long orderId) {
+    public ShippingResponse getShippingByOrderId(UUID orderId) {
         Shipping shipping = shippingRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found for order id: " + orderId));
 
@@ -84,7 +85,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional
-    public void deleteShipping(Long id) {
+    public void deleteShipping(UUID id) {
         if (!shippingRepository.existsById(id)) {
             throw new ResourceNotFoundException("Shipping not found with id: " + id);
         }
@@ -94,13 +95,13 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsByOrderId(Long orderId) {
+    public boolean existsByOrderId(UUID orderId) {
         return shippingRepository.existsByOrderId(orderId);
     }
 
     @Override
     @Transactional
-    public ShippingResponse updateShippingStatus(Long id, String status) {
+    public ShippingResponse updateShippingStatus(UUID id, String status) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with id: " + id));
 
@@ -112,7 +113,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional
-    public ShippingResponse updateTrackingInfo(Long id, String trackingNumber, String carrier) {
+    public ShippingResponse updateTrackingInfo(UUID id, String trackingNumber, String carrier) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with id: " + id));
 
@@ -125,7 +126,7 @@ public class ShippingServiceImpl implements ShippingService {
 
     @Override
     @Transactional
-    public ShippingResponse updateDeliveryDate(Long id, boolean isActual) {
+    public ShippingResponse updateDeliveryDate(UUID id, boolean isActual) {
         Shipping shipping = shippingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping not found with id: " + id));
 

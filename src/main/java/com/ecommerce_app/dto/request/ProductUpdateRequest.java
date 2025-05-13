@@ -40,7 +40,9 @@ public class ProductUpdateRequest {
 
     private String dimensions;
 
+    @Builder.Default
     private Set<UUID> categoryIds = new HashSet<>();
 
+    @Builder.Default
     private Set<UUID> tagIds = new HashSet<>();
 }

@@ -22,6 +22,7 @@ public class OrderCreationRequest {
 
     @Valid
     @NotEmpty(message = "Order must contain at least one item")
+    @Builder.Default
     private Set<OrderItemCreationRequest> orderItems = new HashSet<>();
 
     @Size(max = 1000, message = "Customer notes cannot exceed 1000 characters")

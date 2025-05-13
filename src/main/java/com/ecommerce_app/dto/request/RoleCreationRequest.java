@@ -15,5 +15,6 @@ import java.util.Set;
 public class RoleCreationRequest {
     private String name;
     private String description;
+    @Builder.Default
     private Set<Long> permissionIds = new HashSet<>();
 }

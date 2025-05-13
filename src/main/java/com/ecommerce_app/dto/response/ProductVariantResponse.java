@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -21,7 +22,9 @@ public class ProductVariantResponse {
     private BigDecimal priceDifference;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Builder.Default
     private Set<VariantAttributeResponse> attributes = new HashSet<>();
+    @Builder.Default
     private Set<ProductImageResponse> images = new HashSet<>();
     private InventoryResponse inventory;
 }

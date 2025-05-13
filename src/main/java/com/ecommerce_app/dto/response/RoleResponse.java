@@ -15,10 +15,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleResponse {
-    private Long id;
+    private UUID id;
     private String name;
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Builder.Default
     private Set<PermissionResponse> permissions = new HashSet<>();
 }

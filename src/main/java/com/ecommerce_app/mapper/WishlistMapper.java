@@ -12,7 +12,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 /**
  * Mapper for Wishlist entity and DTOs.
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring")
 public interface WishlistMapper {
 
     /**
@@ -21,6 +21,11 @@ public interface WishlistMapper {
      * @param request the creation request
      * @return the Wishlist entity
      */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "products", ignore = true)
     Wishlist toEntity(WishlistCreationRequest request);
 
     /**

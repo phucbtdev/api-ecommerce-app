@@ -20,5 +20,9 @@ public interface UserActivityMapper {
     @Mapping(target = "userId", source = "user.id")
     UserActivityResponse toResponse(UserActivity userActivity);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
     void updateEntity(UserActivityUpdateRequest request, @MappingTarget UserActivity userActivity);
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressResponse {
-    Long id;
+    UUID id;
     UUID userId;
     String username;
     String addressLine1;

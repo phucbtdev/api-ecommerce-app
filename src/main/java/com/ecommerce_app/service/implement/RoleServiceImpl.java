@@ -40,7 +40,7 @@ public class RoleServiceImpl implements RoleService {
         log.info("Creating new role with name: {}", request.getName());
 
         if (roleRepository.existsByName(request.getName())) {
-            throw new ResourceAlreadyExistsException("Role", "name", request.getName());
+            throw new ResourceAlreadyExistsException("Role name" + request.getName());
         }
 
         Role role = roleMapper.toEntity(request);
@@ -64,7 +64,7 @@ public class RoleServiceImpl implements RoleService {
 
         if (request.getName() != null && !request.getName().equals(role.getName()) &&
                 roleRepository.existsByName(request.getName())) {
-            throw new ResourceAlreadyExistsException("Role", "name", request.getName());
+            throw new ResourceAlreadyExistsException("Role name" +request.getName());
         }
 
         roleMapper.updateEntityFromDto(request, role);
@@ -93,7 +93,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponse getRoleByName(String name) {
         log.info("Fetching role with name: {}", name);
         Role role = roleRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "name", name));
+                .orElseThrow(() -> new ResourceNotFoundException("Role name" + name));
         return roleMapper.toResponseDto(role);
     }
 
@@ -160,13 +160,13 @@ public class RoleServiceImpl implements RoleService {
 
     private Role findRoleById(Long id) {
         return roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException("Role id"+ id.toString()));
     }
 
     private Set<Permission> getPermissionsByIds(Set<Long> permissionIds) {
         return permissionIds.stream()
                 .map(id -> permissionRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Permission", "id", id.toString())))
+                        .orElseThrow(() -> new ResourceNotFoundException("Permission id" + id.toString())))
                 .collect(Collectors.toSet());
     }
 }

@@ -2,6 +2,7 @@ package com.ecommerce_app.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 @Table(name = "order_items")
 @Setter
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

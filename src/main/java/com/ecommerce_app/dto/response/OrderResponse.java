@@ -30,6 +30,7 @@ public class OrderResponse {
     private BigDecimal discountAmount;
     private String customerNotes;
 
+    @Builder.Default
     private Set<OrderItemResponse> orderItems = new HashSet<>();
 
     private PaymentResponse payment;

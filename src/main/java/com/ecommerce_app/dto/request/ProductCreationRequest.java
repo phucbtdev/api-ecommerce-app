@@ -43,13 +43,17 @@ public class ProductCreationRequest {
 
     private String dimensions;
 
+    @Builder.Default
     private Set<UUID> categoryIds = new HashSet<>();
 
+    @Builder.Default
     private Set<UUID> tagIds = new HashSet<>();
 
+    @Builder.Default
     @Valid
     private Set<ProductVariantCreationRequest> variants = new HashSet<>();
 
+    @Builder.Default
     @Valid
     private Set<ProductImageCreationRequest> images = new HashSet<>();
 }

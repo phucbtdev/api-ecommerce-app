@@ -28,6 +28,7 @@ public class CategoryResponse {
 
     private CategoryBasicResponse parent;
 
+    @Builder.Default
     private Set<CategoryBasicResponse> subcategories = new HashSet<>();
 
     private LocalDateTime createdAt;

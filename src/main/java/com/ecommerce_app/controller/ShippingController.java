@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/shippings")
@@ -28,18 +29,18 @@ public class ShippingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ShippingResponse> updateShipping(@PathVariable Long id,
+    public ResponseEntity<ShippingResponse> updateShipping(@PathVariable UUID id,
                                                            @RequestBody @Valid ShippingUpdateRequest shippingUpdateRequest) {
         return ResponseEntity.ok(shippingService.updateShipping(id, shippingUpdateRequest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShippingResponse> getShippingById(@PathVariable Long id) {
+    public ResponseEntity<ShippingResponse> getShippingById(@PathVariable UUID id) {
         return ResponseEntity.ok(shippingService.getShippingById(id));
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<ShippingResponse> getShippingByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<ShippingResponse> getShippingByOrderId(@PathVariable UUID orderId) {
         return ResponseEntity.ok(shippingService.getShippingByOrderId(orderId));
     }
 
@@ -49,21 +50,21 @@ public class ShippingController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteShipping(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteShipping(@PathVariable UUID id) {
         shippingService.deleteShipping(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ShippingResponse> updateShippingStatus(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam @NotBlank(message = "Status cannot be blank") String status) {
         return ResponseEntity.ok(shippingService.updateShippingStatus(id, status));
     }
 
     @PatchMapping("/{id}/tracking")
     public ResponseEntity<ShippingResponse> updateTrackingInfo(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam @NotBlank(message = "Tracking number cannot be blank") String trackingNumber,
             @RequestParam @NotBlank(message = "Carrier cannot be blank") String carrier) {
         return ResponseEntity.ok(shippingService.updateTrackingInfo(id, trackingNumber, carrier));
@@ -71,13 +72,13 @@ public class ShippingController {
 
     @PatchMapping("/{id}/delivery-date")
     public ResponseEntity<ShippingResponse> updateDeliveryDate(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam(defaultValue = "false") boolean isActual) {
         return ResponseEntity.ok(shippingService.updateDeliveryDate(id, isActual));
     }
 
     @GetMapping("/exists/order/{orderId}")
-    public ResponseEntity<Boolean> existsByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<Boolean> existsByOrderId(@PathVariable UUID orderId) {
         return ResponseEntity.ok(shippingService.existsByOrderId(orderId));
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payments")
@@ -25,18 +26,18 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PaymentResponse> updatePayment(@PathVariable Long id,
+    public ResponseEntity<PaymentResponse> updatePayment(@PathVariable UUID id,
                                                          @RequestBody @Valid PaymentUpdateRequest paymentUpdateRequest) {
         return ResponseEntity.ok(paymentService.updatePayment(id, paymentUpdateRequest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<PaymentResponse> getPaymentByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<PaymentResponse> getPaymentByOrderId(@PathVariable UUID orderId) {
         return ResponseEntity.ok(paymentService.getPaymentByOrderId(orderId));
     }
 
@@ -46,7 +47,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePayment(@PathVariable UUID id) {
         paymentService.deletePayment(id);
         return ResponseEntity.noContent().build();
     }

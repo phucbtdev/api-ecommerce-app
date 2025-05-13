@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
         // Process variants and images (these would be handled by their respective services)
         // This would be implemented in a real application with proper services
 
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
         // Save updated product
         product = productRepository.save(product);
 
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
     @Override

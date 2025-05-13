@@ -18,6 +18,7 @@ public class CartResponse {
     UUID id;
     UUID userId;
     String userName;
+    @Builder.Default
     Set<CartItemResponse> items = new HashSet<>();
     BigDecimal totalAmount;
     UUID couponId;

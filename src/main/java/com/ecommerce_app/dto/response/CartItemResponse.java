@@ -4,6 +4,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -11,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartItemResponse {
-    Long id;
-    Long cartId;
-    Long productId;
+    UUID id;
+    UUID cartId;
+    UUID productId;
     String productName;
     String productImage;
-    Long productVariantId;
+    UUID productVariantId;
     String variantName;
     Integer quantity;
     BigDecimal price;

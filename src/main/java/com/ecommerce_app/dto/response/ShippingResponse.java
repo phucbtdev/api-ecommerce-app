@@ -5,6 +5,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,8 +14,8 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShippingResponse {
-    Long id;
-    Long orderId;
+    UUID id;
+    UUID orderId;
     String orderNumber;
     String shippingMethod;
     BigDecimal shippingCost;

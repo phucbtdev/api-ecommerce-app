@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse updatePayment(Long id, PaymentUpdateRequest paymentUpdateRequest) {
+    public PaymentResponse updatePayment(UUID id, PaymentUpdateRequest paymentUpdateRequest) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
 
@@ -51,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentById(Long id) {
+    public PaymentResponse getPaymentById(UUID id) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
 
@@ -60,7 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentByOrderId(Long orderId) {
+    public PaymentResponse getPaymentByOrderId(UUID orderId) {
         Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for order id: " + orderId));
 
@@ -77,7 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public void deletePayment(Long id) {
+    public void deletePayment(UUID id) {
         if (!paymentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Payment not found with id: " + id);
         }

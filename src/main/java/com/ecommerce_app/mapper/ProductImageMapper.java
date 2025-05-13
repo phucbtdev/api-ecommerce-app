@@ -16,7 +16,7 @@ public interface ProductImageMapper {
     @Mapping(target = "variant", ignore = true)
     ProductImage toEntity(ProductImageCreationRequest dto);
 
-    @Mapping(target = "variantId", expression = "java(entity.getVariant() != null ? entity.getVariant().getId() : null)")
+    @Mapping(source = "variant.id", target = "variantId")
     ProductImageResponse toDto(ProductImage entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

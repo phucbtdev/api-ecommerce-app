@@ -11,11 +11,17 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface OrderStatusMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "orders", ignore = true)
     OrderStatus toEntity(OrderStatusCreationRequest request);
 
-    @Mapping(target = "createdAt", expression = "java(entity.getCreatedAt() != null ? entity.getCreatedAt().getTime() : null)")
-    @Mapping(target = "updatedAt", expression = "java(entity.getUpdatedAt() != null ? entity.getUpdatedAt().getTime() : null)")
     OrderStatusResponse toResponse(OrderStatus entity);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "orders", ignore = true)
     void updateEntityFromRequest(OrderStatusUpdateRequest request, @MappingTarget OrderStatus entity);
 }

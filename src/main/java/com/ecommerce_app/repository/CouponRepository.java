@@ -2,6 +2,7 @@ package com.ecommerce_app.repository;
 
 import com.ecommerce_app.entity.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -24,5 +25,6 @@ public interface CouponRepository extends JpaRepository<Coupon, UUID> {
 
     List<Coupon> findByActiveAndValidFromBeforeAndValidUntilAfter(Boolean active, LocalDateTime now, LocalDateTime now2);
 
-    List<Coupon> findByUsedCountLessThanUsageLimit();
+    @Query("SELECT c FROM Coupon c WHERE c.usedCount < c.usageLimit")
+    List<Coupon> findCouponsWithUsageAvailable();
 }

@@ -24,6 +24,9 @@ public interface RoleMapper {
     @Mapping(target = "updatedAt", ignore = true)
     Role toEntity(RoleCreationRequest dto);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "permissions", ignore = true)
     @Mapping(target = "users", ignore = true)
     void updateEntityFromDto(RoleUpdateRequest dto, @MappingTarget Role entity);

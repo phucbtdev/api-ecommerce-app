@@ -5,25 +5,26 @@ import com.ecommerce_app.dto.request.ShippingUpdateRequest;
 import com.ecommerce_app.dto.response.ShippingResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ShippingService {
     ShippingResponse createShipping(ShippingCreationRequest shippingCreationRequest);
 
-    ShippingResponse updateShipping(Long id, ShippingUpdateRequest shippingUpdateRequest);
+    ShippingResponse updateShipping(UUID id, ShippingUpdateRequest shippingUpdateRequest);
 
-    ShippingResponse getShippingById(Long id);
+    ShippingResponse getShippingById(UUID id);
 
-    ShippingResponse getShippingByOrderId(Long orderId);
+    ShippingResponse getShippingByOrderId(UUID orderId);
 
     List<ShippingResponse> getAllShippings();
 
-    void deleteShipping(Long id);
+    void deleteShipping(UUID id);
 
-    boolean existsByOrderId(Long orderId);
+    boolean existsByOrderId(UUID orderId);
 
-    ShippingResponse updateShippingStatus(Long id, String status);
+    ShippingResponse updateShippingStatus(UUID id, String status);
 
-    ShippingResponse updateTrackingInfo(Long id, String trackingNumber, String carrier);
+    ShippingResponse updateTrackingInfo(UUID id, String trackingNumber, String carrier);
 
-    ShippingResponse updateDeliveryDate(Long id, boolean isActual);
+    ShippingResponse updateDeliveryDate(UUID id, boolean isActual);
 }

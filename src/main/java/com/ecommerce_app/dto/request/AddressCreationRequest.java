@@ -43,6 +43,7 @@ public class AddressCreationRequest {
     @Size(max = 20, message = "Phone number cannot exceed 20 characters")
     String phoneNumber;
 
+    @Builder.Default
     Boolean isDefault = false;
 
     @NotBlank(message = "Address type cannot be blank")

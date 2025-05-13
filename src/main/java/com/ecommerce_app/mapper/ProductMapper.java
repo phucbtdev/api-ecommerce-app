@@ -27,6 +27,7 @@ public interface ProductMapper {
     @Mapping(target = "tags", source = "tags")
     @Mapping(target = "images", source = "images")
     @Mapping(target = "variants", source = "variants")
+    @Mapping(source = "id", target = "id")
     ProductResponse toResponse(Product entity);
 
     @Mapping(target = "mainImageUrl", expression = "java(getMainImageUrl(entity))")

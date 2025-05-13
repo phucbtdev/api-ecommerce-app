@@ -24,6 +24,7 @@ public interface CategoryMapper {
     @Mapping(target = "updatedAt", ignore = true)
     Category toEntity(CategoryCreationRequest dto);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "parent", ignore = true)
     @Mapping(target = "products", ignore = true)
     @Mapping(target = "subcategories", ignore = true)

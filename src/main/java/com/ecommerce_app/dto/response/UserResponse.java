@@ -22,6 +22,8 @@ public class UserResponse {
     private String lastName;
     private String phoneNumber;
     private Boolean active;
+
+    @Builder.Default
     private Set<RoleResponse> roles = new HashSet<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

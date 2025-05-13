@@ -6,19 +6,20 @@ import com.ecommerce_app.dto.request.PaymentUpdateRequest;
 import com.ecommerce_app.dto.response.PaymentResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface PaymentService {
 
     PaymentResponse createPayment(PaymentCreationRequest paymentCreationRequest);
 
-    PaymentResponse updatePayment(Long id, PaymentUpdateRequest paymentUpdateRequest);
+    PaymentResponse updatePayment(UUID id, PaymentUpdateRequest paymentUpdateRequest);
 
-    PaymentResponse getPaymentById(Long id);
+    PaymentResponse getPaymentById(UUID id);
 
-    PaymentResponse getPaymentByOrderId(Long orderId);
+    PaymentResponse getPaymentByOrderId(UUID orderId);
 
     List<PaymentResponse> getAllPayments();
 
-    void deletePayment(Long id);
+    void deletePayment(UUID id);
 
 }

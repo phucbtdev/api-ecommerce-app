@@ -27,9 +27,11 @@ public class ProductVariantCreationRequest {
     private BigDecimal priceDifference;
 
     @Valid
+    @Builder.Default
     private Set<VariantAttributeCreationRequest> attributes = new HashSet<>();
 
     @Valid
+    @Builder.Default
     private Set<ProductImageCreationRequest> images = new HashSet<>();
 
     @Valid
