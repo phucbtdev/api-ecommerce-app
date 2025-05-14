@@ -7,12 +7,16 @@ import com.ecommerce_app.dto.request.ForgotPasswordRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
 import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.AuthenticationResponse;
 import com.ecommerce_app.dto.response.UserResponse;
 import com.ecommerce_app.service.interfaces.AuthService;
+import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.ParseException;
 
 @RestController
 @RequestMapping("/auth")
@@ -48,8 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        TokenResponse tokenResponse = authService.refreshToken(refreshTokenRequest);
-        return ResponseEntity.ok(tokenResponse);
+    public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) throws ParseException, JOSEException {
+        return ResponseEntity.ok(authService.refreshToken(refreshTokenRequest));
     }
 }

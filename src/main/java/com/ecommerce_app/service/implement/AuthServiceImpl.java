@@ -8,21 +8,27 @@ import com.ecommerce_app.dto.auth.TokenResponse;
 import com.ecommerce_app.dto.request.ForgotPasswordRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
+import com.ecommerce_app.dto.response.AuthenticationResponse;
 import com.ecommerce_app.dto.response.UserResponse;
+import com.ecommerce_app.entity.InvalidatedToken;
 import com.ecommerce_app.entity.PasswordResetToken;
 import com.ecommerce_app.entity.Role;
 import com.ecommerce_app.entity.User;
 import com.ecommerce_app.exception.AppException;
 import com.ecommerce_app.exception.ErrorCode;
 import com.ecommerce_app.mapper.UserMapper;
+import com.ecommerce_app.repository.InvalidatedTokenRepository;
 import com.ecommerce_app.repository.PasswordResetTokenRepository;
 import com.ecommerce_app.repository.RoleRepository;
 import com.ecommerce_app.repository.UserRepository;
 import com.ecommerce_app.service.interfaces.AuthService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -43,6 +50,7 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -52,8 +60,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtDecoder jwtDecoder;
     private final JavaMailSender mailSender;
+    private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -153,30 +161,27 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public TokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        try {
-            Jwt jwt = jwtDecoder.decode(refreshTokenRequest.getRefreshToken());
-            String username = jwt.getSubject();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+    public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(refreshTokenRequest.getRefreshToken());
 
-            if (!jwt.getClaimAsString("type").equals("refresh") || jwt.getExpiresAt().isBefore(Instant.now())) {
-                throw new RuntimeException("Invalid or expired refresh token");
-            }
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-            TokenInfo accessToken = generateJwtToken(user); // 1 hour
+        InvalidatedToken invalidatedToken =
+                InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
 
-            return TokenResponse.builder()
-                    .token(accessToken.token)
-                    .type("Bearer")
-                    .id(user.getId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
-                    .build();
-        } catch (JwtException e) {
-            throw new RuntimeException("Invalid refresh token");
-        }
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var email = signedJWT.getJWTClaimsSet().getSubject();
+
+        var user =  userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        var token = generateJwtToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token.token)
+                .expiryTime(token.expiryDate)
+                .build();
     }
 
     private TokenInfo generateJwtToken(User user) {
@@ -188,7 +193,7 @@ public class AuthServiceImpl implements AuthService {
                 .toEpochMilli());
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(String.valueOf(user.getId()))
+                .subject(user.getEmail())
                 .issuer("phucbtdev.com")
                 .issueTime(issueTime)
                 .expirationTime(expiryTime)
@@ -231,4 +236,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private record TokenInfo(String token, Date expiryDate) {}
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+        JWSVerifier verifier = new MACVerifier(jwtSecret.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        if (!(verified && expiryTime.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        return signedJWT;
+    }
 }
