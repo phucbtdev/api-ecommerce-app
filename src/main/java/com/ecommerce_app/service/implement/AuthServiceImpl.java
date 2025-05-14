@@ -11,28 +11,33 @@ import com.ecommerce_app.dto.request.ResetPasswordRequest;
 import com.ecommerce_app.entity.PasswordResetToken;
 import com.ecommerce_app.entity.Role;
 import com.ecommerce_app.entity.User;
+import com.ecommerce_app.exception.AppException;
+import com.ecommerce_app.exception.ErrorCode;
 import com.ecommerce_app.repository.PasswordResetTokenRepository;
 import com.ecommerce_app.repository.RoleRepository;
 import com.ecommerce_app.repository.UserRepository;
 import com.ecommerce_app.service.interfaces.AuthService;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,31 +49,27 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JwtDecoder jwtDecoder;
-    private final JwtEncoder jwtEncoder;
     private final JavaMailSender mailSender;
+
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
 
     @Override
     @Transactional
     public TokenResponse login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+        PasswordEncoder password = new BCryptPasswordEncoder(10);
+        User user = userRepository
+                .findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean authenticated = password.matches(loginRequest.getPassword(), user.getPassword());
+        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        String accessToken = generateJwtToken(authentication, user, 3600L); // 1 hour
-        String refreshToken = generateJwtToken(authentication, user, 604800L); // 7 days
+        TokenInfo accessToken = generateJwtToken( user);
 
         return TokenResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
+                .token(accessToken.token)
                 .type("Bearer")
                 .id(user.getId())
                 .username(user.getUsername())
@@ -100,21 +101,12 @@ public class AuthServiceImpl implements AuthService {
                 .roles(roles)
                 .active(true)
                 .build();
-
         userRepository.save(user);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                signupRequest.getUsername(),
-                signupRequest.getPassword(),
-                roles.stream().map(role -> (GrantedAuthority) role::getName).toList()
-        );
-
-        String accessToken = generateJwtToken(authentication, user, 3600L); // 1 hour
-        String refreshToken = generateJwtToken(authentication, user, 604800L); // 7 days
+        TokenInfo accessToken = generateJwtToken(user);
 
         return TokenResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
+                .token(accessToken.token)
                 .type("Bearer")
                 .id(user.getId())
                 .username(user.getUsername())
@@ -175,23 +167,14 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Verify token is a refresh token and not expired
             if (!jwt.getClaimAsString("type").equals("refresh") || jwt.getExpiresAt().isBefore(Instant.now())) {
                 throw new RuntimeException("Invalid or expired refresh token");
             }
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    username,
-                    null,
-                    user.getRoles().stream().map(role -> (GrantedAuthority) role::getName).toList()
-            );
-
-            String accessToken = generateJwtToken(authentication, user, 3600L); // 1 hour
-            String newRefreshToken = generateJwtToken(authentication, user, 604800L); // 7 days
+            TokenInfo accessToken = generateJwtToken(user); // 1 hour
 
             return TokenResponse.builder()
-                    .token(accessToken)
-                    .refreshToken(newRefreshToken)
+                    .token(accessToken.token)
                     .type("Bearer")
                     .id(user.getId())
                     .username(user.getUsername())
@@ -203,29 +186,30 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private String generateJwtToken(Authentication authentication, User user, long expirySeconds) {
-        Instant now = Instant.now();
+    private TokenInfo generateJwtToken(User user) {
+        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
+        Date issueTime = new Date();
+        Date expiryTime = new Date(Instant.ofEpochMilli(issueTime.getTime())
+                .plus(1, ChronoUnit.HOURS)
+                .toEpochMilli());
 
-        String scope = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
-
-        JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expirySeconds))
+        JWTClaimsSet.Builder jwtClaimsSet = new JWTClaimsSet.Builder()
+                .issuer("phucdev")
+                .issueTime(issueTime)
+                .expirationTime(expiryTime)
                 .subject(user.getUsername())
-                .claim("scope", scope)
-                .claim("userId", user.getId().toString());
+                .claim("scope", buildScope(user))
+                .claim("userId", user.getId());
 
-        if (expirySeconds > 3600L) { // Mark as refresh token if expiry is longer than access token
-            claimsBuilder.claim("type", "refresh");
-        } else {
-            claimsBuilder.claim("type", "access");
+        Payload payload = new Payload(jwtClaimsSet.toString());
+        JWSObject jwsObject = new JWSObject(jwsHeader, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(jwtSecret.getBytes()));
+            return new TokenInfo(jwsObject.serialize(), expiryTime);
+        } catch (JOSEException e) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        JwtClaimsSet claims = claimsBuilder.build();
-        JwsHeader jwsHeader = JwsHeader.with(() -> "HS256").build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
     @Async
@@ -236,4 +220,19 @@ public class AuthServiceImpl implements AuthService {
         mailMessage.setText("To reset your password, click the link below:\n" + resetUrl + "\n\nThis link is valid for 24 hours.");
         mailSender.send(mailMessage);
     }
+
+    private String buildScope(User users) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+
+        if (!CollectionUtils.isEmpty(users.getRoles()))
+            users.getRoles().forEach(role -> {
+                stringJoiner.add("ROLE_" + role.getName());
+                if (!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions().forEach(permission -> stringJoiner.add(permission.getName()));
+            });
+
+        return stringJoiner.toString();
+    }
+
+    private record TokenInfo(String token, Date expiryDate) {}
 }

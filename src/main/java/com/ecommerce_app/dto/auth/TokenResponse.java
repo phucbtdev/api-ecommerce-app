@@ -14,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TokenResponse {
     private String token;
-    private String refreshToken;
     @Builder.Default
     private String type = "Bearer";
     private UUID id;
