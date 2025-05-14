@@ -1,6 +1,6 @@
 package com.ecommerce_app.config;
 
-import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.ApiResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,13 +20,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ApiResponse<?> apiResponse = ApiResponse.builder()
+        ApiResult<?> apiResult = ApiResult.builder()
                 .message("UNAUTHORIZED")
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(apiResult));
         response.flushBuffer();
     }
 }

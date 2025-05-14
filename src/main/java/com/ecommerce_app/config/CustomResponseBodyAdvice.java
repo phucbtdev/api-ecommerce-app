@@ -1,6 +1,6 @@
 package com.ecommerce_app.config;
 
-import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.ApiResult;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -38,10 +38,10 @@ public class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        if (body instanceof ApiResponse) {
+        if (body instanceof ApiResult) {
             return body;
         }
 
-        return ApiResponse.success("Request processed successfully", body);
+        return ApiResult.success("Request processed successfully", body);
     }
 }

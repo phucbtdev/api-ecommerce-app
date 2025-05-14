@@ -1,6 +1,6 @@
 package com.ecommerce_app.exception;
 
-import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.ApiResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceNotFoundException(
+    public ResponseEntity<ApiResult<ErrorDetails>> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
@@ -35,12 +35,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error(ex.getMessage(), errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error(ex.getMessage(), errorDetails);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceAlreadyExistsException(
+    public ResponseEntity<ApiResult<ErrorDetails>> handleResourceAlreadyExistsException(
             ResourceAlreadyExistsException ex, WebRequest request) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
@@ -51,12 +51,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error(ex.getMessage(), errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error(ex.getMessage(), errorDetails);
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleBadRequestException(
+    public ResponseEntity<ApiResult<ErrorDetails>> handleBadRequestException(
             BadRequestException ex, WebRequest request) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
@@ -67,12 +67,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error(ex.getMessage(), errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error(ex.getMessage(), errorDetails);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleUnauthorizedException(
+    public ResponseEntity<ApiResult<ErrorDetails>> handleUnauthorizedException(
             UnauthorizedException ex, WebRequest request) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
@@ -83,12 +83,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error(ex.getMessage(), errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error(ex.getMessage(), errorDetails);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleAccessDeniedException(
+    public ResponseEntity<ApiResult<ErrorDetails>> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
@@ -99,14 +99,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(HttpStatus.FORBIDDEN.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error("Access Denied", errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error("Access Denied", errorDetails);
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     // ===== Global Exception (with Swagger path check) =====
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleGlobalException(Exception ex, WebRequest request) {
+    public ResponseEntity<ApiResult<ErrorDetails>> handleGlobalException(Exception ex, WebRequest request) {
         log.error("Exception: ", ex);
         String path = ((ServletWebRequest) request).getRequest().getRequestURI();
 
@@ -133,13 +133,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        ApiResponse<Map<String, String>> response = ApiResponse.error("Validation Failed", errors);
+        ApiResult<Map<String, String>> response = ApiResult.error("Validation Failed", errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     // ===== Helper =====
 
-    private ResponseEntity<ApiResponse<ErrorDetails>> buildErrorResponse(Exception ex, WebRequest request, HttpStatus status) {
+    private ResponseEntity<ApiResult<ErrorDetails>> buildErrorResponse(Exception ex, WebRequest request, HttpStatus status) {
         log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
@@ -149,7 +149,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .error(status.getReasonPhrase())
                 .build();
 
-        ApiResponse<ErrorDetails> response = ApiResponse.error(ex.getMessage(), errorDetails);
+        ApiResult<ErrorDetails> response = ApiResult.error(ex.getMessage(), errorDetails);
         return new ResponseEntity<>(response, status);
     }
 }
