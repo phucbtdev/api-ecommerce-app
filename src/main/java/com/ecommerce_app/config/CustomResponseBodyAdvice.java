@@ -21,7 +21,7 @@ public class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     public boolean supports(MethodParameter returnType,
                             Class<? extends HttpMessageConverter<?>> converterType
     ) {
-        return true; // Xử lý tất cả response
+        return true;
     }
 
     @Override
