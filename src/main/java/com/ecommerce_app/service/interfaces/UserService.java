@@ -64,7 +64,7 @@ public interface  UserService {
      * @param roleIds set of role IDs
      * @return updated user response
      */
-    UserResponse updateUserRoles(UUID userId, Set<Long> roleIds);
+    UserResponse updateUserRoles(UUID userId, Set<UUID> roleIds);
 
     /**
      * Activate user

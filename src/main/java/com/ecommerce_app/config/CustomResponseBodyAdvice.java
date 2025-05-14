@@ -42,6 +42,6 @@ public class CustomResponseBodyAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        return ApiResponse.success(body);
+        return ApiResponse.success("Request processed successfully", body);
     }
 }

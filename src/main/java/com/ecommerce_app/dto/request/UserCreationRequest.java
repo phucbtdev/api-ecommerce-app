@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -28,12 +29,10 @@ public class UserCreationRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    private String firstName;
-
-    private String lastName;
+    private String fullName;
 
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number should be valid")
     private String phoneNumber;
 
-    private Set<Long> roleIds;
+    private Set<UUID> roleIds;
 }

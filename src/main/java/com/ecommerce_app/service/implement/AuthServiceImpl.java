@@ -1,6 +1,7 @@
 package com.ecommerce_app.service.implement;
 
 
+import com.ecommerce_app.constant.PredefinedRole;
 import com.ecommerce_app.dto.auth.LoginRequest;
 import com.ecommerce_app.dto.auth.SignupRequest;
 import com.ecommerce_app.dto.auth.TokenResponse;
@@ -88,24 +89,14 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email is already in use");
         }
 
-        Set<Role> roles = new HashSet<>();
-        if (signupRequest.getRoles() != null && !signupRequest.getRoles().isEmpty()) {
-            roles = signupRequest.getRoles().stream()
-                    .map(roleName -> roleRepository.findByName(roleName)
-                            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
-                    .collect(Collectors.toSet());
-        } else {
-            Role defaultRole = roleRepository.findByName("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Default role not found"));
-            roles.add(defaultRole);
-        }
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findByName(PredefinedRole.CUSTOMER_ROLE).ifPresent(roles::add);
 
         User user = User.builder()
                 .username(signupRequest.getUsername())
                 .email(signupRequest.getEmail())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
-                .firstName(signupRequest.getFirstName())
-                .lastName(signupRequest.getLastName())
+                .fullName(signupRequest.getFullName())
                 .roles(roles)
                 .active(true)
                 .build();
@@ -232,9 +223,9 @@ public class AuthServiceImpl implements AuthService {
         } else {
             claimsBuilder.claim("type", "access");
         }
-
         JwtClaimsSet claims = claimsBuilder.build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        JwsHeader jwsHeader = JwsHeader.with(() -> "HS256").build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 
     @Async

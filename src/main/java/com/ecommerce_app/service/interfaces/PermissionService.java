@@ -8,6 +8,7 @@ import com.ecommerce_app.dto.response.PermissionResponse;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public interface PermissionService {
 
@@ -25,7 +26,7 @@ public interface PermissionService {
      * @param id permission ID
      * @return permission response
      */
-    PermissionResponse getPermissionById(Long id);
+    PermissionResponse getPermissionById(UUID id);
 
     /**
      * Get permission by name
@@ -49,14 +50,14 @@ public interface PermissionService {
      * @param permissionUpdateRequestDto permission update data
      * @return updated permission response
      */
-    PermissionResponse updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto);
+    PermissionResponse updatePermission(UUID id, PermissionUpdateRequestDto permissionUpdateRequestDto);
 
     /**
      * Delete permission
      *
      * @param id permission ID
      */
-    void deletePermission(Long id);
+    void deletePermission(UUID id);
 
     /**
      * Check if permission exists by name

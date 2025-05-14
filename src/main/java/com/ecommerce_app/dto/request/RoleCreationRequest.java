@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 
 @Data
@@ -16,5 +17,5 @@ public class RoleCreationRequest {
     private String name;
     private String description;
     @Builder.Default
-    private Set<Long> permissionIds = new HashSet<>();
+    private Set<UUID> permissionIds = new HashSet<>();
 }

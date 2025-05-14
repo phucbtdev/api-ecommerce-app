@@ -17,6 +17,10 @@ import java.util.Set;
 public class SignupRequest {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    private String fullName;
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;
 
     @NotBlank(message = "Email is required")
@@ -28,7 +32,6 @@ public class SignupRequest {
     @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
     private String password;
 
-    private String firstName;
-    private String lastName;
-    private Set<String> roles;
+
 }
+

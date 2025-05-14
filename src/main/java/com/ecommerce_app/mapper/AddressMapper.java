@@ -17,6 +17,7 @@ public interface AddressMapper {
     @Mapping(target = "billingOrders", ignore = true)
     @Mapping(target = "shippingOrders", ignore = true)
     @Mapping(target = "phoneNumber", source = "dto.phoneNumber")
+    @Mapping(target = "fullName", source = "dto.fullName")
     Address toEntity(AddressCreationRequest dto, User user);
 
     @Mapping(target = "id", ignore = true)

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Table(name = "roles")
 @Setter
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -29,8 +31,10 @@ public class Role extends BaseEntity {
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
+    @Builder.Default
     Set<Permission> permissions = new HashSet<>();
 
+    @Builder.Default
     @ManyToMany(mappedBy = "roles")
     Set<User> users = new HashSet<>();
 

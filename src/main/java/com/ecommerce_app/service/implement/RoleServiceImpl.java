@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,7 +58,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse updateRole(Long id, RoleUpdateRequest request) {
+    public RoleResponse updateRole(UUID id, RoleUpdateRequest request) {
         log.info("Updating role with ID: {}", id);
 
         Role role = findRoleById(id);
@@ -82,7 +83,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleResponse getRoleById(Long id) {
+    public RoleResponse getRoleById(UUID id) {
         log.info("Fetching role with ID: {}", id);
         Role role = findRoleById(id);
         return roleMapper.toResponseDto(role);
@@ -115,7 +116,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void deleteRole(Long id) {
+    public void deleteRole(UUID id) {
         log.info("Deleting role with ID: {}", id);
         Role role = findRoleById(id);
 
@@ -129,7 +130,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse addPermissionsToRole(Long roleId, Set<Long> permissionIds) {
+    public RoleResponse addPermissionsToRole(UUID roleId, Set<UUID> permissionIds) {
         log.info("Adding permissions to role with ID: {}", roleId);
 
         Role role = findRoleById(roleId);
@@ -143,7 +144,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
+    public RoleResponse removePermissionsFromRole(UUID roleId, Set<UUID> permissionIds) {
         log.info("Removing permissions from role with ID: {}", roleId);
 
         Role role = findRoleById(roleId);
@@ -158,12 +159,12 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponseDto(updatedRole);
     }
 
-    private Role findRoleById(Long id) {
+    private Role findRoleById(UUID id) {
         return roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role id"+ id.toString()));
     }
 
-    private Set<Permission> getPermissionsByIds(Set<Long> permissionIds) {
+    private Set<Permission> getPermissionsByIds(Set<UUID> permissionIds) {
         return permissionIds.stream()
                 .map(id -> permissionRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Permission id" + id.toString())))

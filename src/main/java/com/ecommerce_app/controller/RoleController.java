@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/roles")
@@ -34,14 +35,14 @@ public class RoleController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
     public ResponseEntity<RoleResponse> updateRole(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody RoleUpdateRequest request) {
         return ResponseEntity.ok(roleService.updateRole(id, request));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
-    public ResponseEntity<RoleResponse> getRoleById(@PathVariable Long id) {
+    public ResponseEntity<RoleResponse> getRoleById(@PathVariable UUID id) {
         return ResponseEntity.ok(roleService.getRoleById(id));
     }
 
@@ -66,7 +67,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable UUID id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
@@ -74,16 +75,16 @@ public class RoleController {
     @PostMapping("/{id}/permissions")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
     public ResponseEntity<RoleResponse> addPermissionsToRole(
-            @PathVariable Long id,
-            @RequestBody Set<Long> permissionIds) {
+            @PathVariable UUID id,
+            @RequestBody Set<UUID> permissionIds) {
         return ResponseEntity.ok(roleService.addPermissionsToRole(id, permissionIds));
     }
 
     @DeleteMapping("/{id}/permissions")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
     public ResponseEntity<RoleResponse> removePermissionsFromRole(
-            @PathVariable Long id,
-            @RequestBody Set<Long> permissionIds) {
+            @PathVariable UUID id,
+            @RequestBody Set<UUID> permissionIds) {
         return ResponseEntity.ok(roleService.removePermissionsFromRole(id, permissionIds));
     }
 }

@@ -51,7 +51,7 @@ public interface OrderMapper {
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userEmail", source = "user.email")
-    @Mapping(target = "userName", expression = "java(order.getUser().getFirstName() + \" \" + order.getUser().getLastName())")
+    @Mapping(target = "userName", source = "user.fullName")
     @Mapping(target = "orderStatusId", source = "status.id")
     @Mapping(target = "orderStatus", source = "status.name")
     OrderResponse toResponse(Order order);

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +47,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public PermissionResponse getPermissionById(Long id) {
+    public PermissionResponse getPermissionById(UUID id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission with id " + id + " not found"));
 
@@ -72,7 +73,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional
-    public PermissionResponse updatePermission(Long id, PermissionUpdateRequestDto permissionUpdateRequestDto) {
+    public PermissionResponse updatePermission(UUID id, PermissionUpdateRequestDto permissionUpdateRequestDto) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission with id " + id + " not found"));
 
@@ -95,7 +96,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional
-    public void deletePermission(Long id) {
+    public void deletePermission(UUID id) {
         if (!permissionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Permission with id " + id + " not found");
         }

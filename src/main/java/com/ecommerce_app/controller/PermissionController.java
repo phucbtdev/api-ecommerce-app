@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/permissions")
@@ -31,7 +32,7 @@ public class PermissionController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PermissionResponse> getPermissionById(@PathVariable Long id) {
+    public ResponseEntity<PermissionResponse> getPermissionById(@PathVariable UUID id) {
         PermissionResponse permission = permissionService.getPermissionById(id);
         return ResponseEntity.ok(permission);
     }
@@ -53,7 +54,7 @@ public class PermissionController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PermissionResponse> updatePermission(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody PermissionUpdateRequestDto permissionUpdateRequestDto) {
         PermissionResponse updatedPermission = permissionService.updatePermission(id, permissionUpdateRequestDto);
         return ResponseEntity.ok(updatedPermission);
@@ -61,7 +62,7 @@ public class PermissionController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deletePermission(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePermission(@PathVariable UUID id) {
         permissionService.deletePermission(id);
         return ResponseEntity.noContent().build();
     }

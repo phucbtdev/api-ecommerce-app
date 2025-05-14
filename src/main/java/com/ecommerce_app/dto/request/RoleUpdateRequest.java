@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.Set;
+import java.util.UUID;
 
 
 @Data
@@ -13,5 +14,5 @@ import java.util.Set;
 public class RoleUpdateRequest {
     private String name;
     private String description;
-    private Set<Long> permissionIds;
+    private Set<UUID> permissionIds;
 }

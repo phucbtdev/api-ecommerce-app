@@ -70,7 +70,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUserRoles(
             @PathVariable UUID id,
-            @RequestBody Set<Long> roleIds) {
+            @RequestBody Set<UUID> roleIds) {
         UserResponse updatedUser = userService.updateUserRoles(id, roleIds);
         return ResponseEntity.ok(updatedUser);
     }

@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         // Set roles if provided
         if (userCreationDto.getRoleIds() != null && !userCreationDto.getRoleIds().isEmpty()) {
             Set<Role> roles = new HashSet<>();
-            for (Long roleId : userCreationDto.getRoleIds()) {
+            for (UUID roleId : userCreationDto.getRoleIds()) {
                 Role role = roleRepository.findById(roleId) 
                         .orElseThrow(() -> new ResourceNotFoundException("Role with id " + roleId + " not found"));
                 roles.add(role);
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
         // Update roles if provided
         if (userUpdateDto.getRoleIds() != null) {
             Set<Role> roles = new HashSet<>();
-            for (Long roleId : userUpdateDto.getRoleIds()) {
+            for (UUID roleId : userUpdateDto.getRoleIds()) {
                 Role role = roleRepository.findById(roleId)
                         .orElseThrow(() -> new ResourceNotFoundException("Role with id " + roleId + " not found"));
                 roles.add(role);
@@ -152,12 +152,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateUserRoles(UUID userId, Set<Long> roleIds) {
+    public UserResponse updateUserRoles(UUID userId, Set<UUID> roleIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " not found"));
 
         Set<Role> roles = new HashSet<>();
-        for (Long roleId : roleIds) {
+        for (UUID roleId : roleIds) {
             Role role = roleRepository.findById(roleId)
                     .orElseThrow(() -> new ResourceNotFoundException("Role with id " + roleId + " not found"));
             roles.add(role);

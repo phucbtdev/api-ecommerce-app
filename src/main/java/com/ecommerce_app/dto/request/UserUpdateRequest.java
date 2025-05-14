@@ -25,14 +25,12 @@ public class UserUpdateRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    private String firstName;
-
-    private String lastName;
+    private String fullName;
 
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number should be valid")
     private String phoneNumber;
 
     private Boolean active;
 
-    private Set<Long> roleIds;
+    private Set<UUID> roleIds;
 }
