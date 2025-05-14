@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         log.info("Created new user with id: {}", savedUser.getId());
 
-        return userMapper.toResponseDto(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
 
-        return userMapper.toResponseDto(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User with username " + username + " not found"));
 
-        return userMapper.toResponseDto(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -93,14 +93,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User with email " + email + " not found"));
 
-        return userMapper.toResponseDto(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(userMapper::toResponseDto)
+                .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         log.info("Updated user with id: {}", updatedUser.getId());
 
-        return userMapper.toResponseDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         log.info("Updated roles for user with id: {}", userId);
 
-        return userMapper.toResponseDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Override
@@ -180,7 +180,7 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         log.info("Activated user with id: {}", id);
 
-        return userMapper.toResponseDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Override
@@ -193,7 +193,7 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         log.info("Deactivated user with id: {}", id);
 
-        return userMapper.toResponseDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Override

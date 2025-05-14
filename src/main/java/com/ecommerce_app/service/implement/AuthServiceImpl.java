@@ -8,11 +8,13 @@ import com.ecommerce_app.dto.auth.TokenResponse;
 import com.ecommerce_app.dto.request.ForgotPasswordRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
+import com.ecommerce_app.dto.response.UserResponse;
 import com.ecommerce_app.entity.PasswordResetToken;
 import com.ecommerce_app.entity.Role;
 import com.ecommerce_app.entity.User;
 import com.ecommerce_app.exception.AppException;
 import com.ecommerce_app.exception.ErrorCode;
+import com.ecommerce_app.mapper.UserMapper;
 import com.ecommerce_app.repository.PasswordResetTokenRepository;
 import com.ecommerce_app.repository.RoleRepository;
 import com.ecommerce_app.repository.UserRepository;
@@ -47,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtDecoder jwtDecoder;
@@ -82,12 +85,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public TokenResponse signup(SignupRequest signupRequest) {
+    public UserResponse signup(SignupRequest signupRequest) {
         if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            throw new RuntimeException("Username is already taken");
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
         HashSet<Role> roles = new HashSet<>();
@@ -101,18 +104,8 @@ public class AuthServiceImpl implements AuthService {
                 .roles(roles)
                 .active(true)
                 .build();
-        userRepository.save(user);
 
-        TokenInfo accessToken = generateJwtToken(user);
-
-        return TokenResponse.builder()
-                .token(accessToken.token)
-                .type("Bearer")
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .roles(roles.stream().map(Role::getName).collect(Collectors.toSet()))
-                .build();
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override
@@ -187,22 +180,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private TokenInfo generateJwtToken(User user) {
-        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+
         Date issueTime = new Date();
         Date expiryTime = new Date(Instant.ofEpochMilli(issueTime.getTime())
                 .plus(1, ChronoUnit.HOURS)
                 .toEpochMilli());
 
-        JWTClaimsSet.Builder jwtClaimsSet = new JWTClaimsSet.Builder()
-                .issuer("phucdev")
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(String.valueOf(user.getId()))
+                .issuer("phucbtdev.com")
                 .issueTime(issueTime)
                 .expirationTime(expiryTime)
-                .subject(user.getUsername())
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
-                .claim("userId", user.getId());
+                .claim("userId", user.getId())
+                .build();
 
-        Payload payload = new Payload(jwtClaimsSet.toString());
-        JWSObject jwsObject = new JWSObject(jwsHeader, payload);
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
             jwsObject.sign(new MACSigner(jwtSecret.getBytes()));
@@ -221,11 +217,11 @@ public class AuthServiceImpl implements AuthService {
         mailSender.send(mailMessage);
     }
 
-    private String buildScope(User users) {
+    private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
 
-        if (!CollectionUtils.isEmpty(users.getRoles()))
-            users.getRoles().forEach(role -> {
+        if (!CollectionUtils.isEmpty(user.getRoles()))
+            user.getRoles().forEach(role -> {
                 stringJoiner.add("ROLE_" + role.getName());
                 if (!CollectionUtils.isEmpty(role.getPermissions()))
                     role.getPermissions().forEach(permission -> stringJoiner.add(permission.getName()));

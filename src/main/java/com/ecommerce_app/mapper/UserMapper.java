@@ -24,9 +24,7 @@ public interface UserMapper {
     @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "active", source = "active")
     @Mapping(target = "roles", source = "roles")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "updatedAt", source = "updatedAt")
-    UserResponse toResponseDto(User user);
+    UserResponse toResponse(User user);
 
     /**
      * Maps UserCreationDto to User entity
@@ -76,7 +74,6 @@ public interface UserMapper {
     /**
      * Maps Role entity to RoleDto
      */
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
     RoleResponse roleToRoleDto(Role role);
 

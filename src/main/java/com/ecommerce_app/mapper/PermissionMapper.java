@@ -12,11 +12,8 @@ public interface PermissionMapper {
     /**
      * Maps Permission entity to PermissionResponse
      */
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
     @Mapping(target = "description", source = "description")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "updatedAt", source = "updatedAt")
     PermissionResponse toResponseDto(Permission permission);
 
     /**

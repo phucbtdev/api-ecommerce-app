@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -24,6 +23,4 @@ public class UserResponse {
 
     @Builder.Default
     private Set<RoleResponse> roles = new HashSet<>();
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

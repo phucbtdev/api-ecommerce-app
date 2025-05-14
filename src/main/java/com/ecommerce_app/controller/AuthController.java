@@ -6,6 +6,8 @@ import com.ecommerce_app.dto.auth.TokenResponse;
 import com.ecommerce_app.dto.request.ForgotPasswordRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
+import com.ecommerce_app.dto.response.ApiResponse;
+import com.ecommerce_app.dto.response.UserResponse;
 import com.ecommerce_app.service.interfaces.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +28,11 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
-        TokenResponse tokenResponse = authService.signup(signupRequest);
-        return ResponseEntity.ok(tokenResponse);
+    public ApiResponse<UserResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
+        return ApiResponse.<UserResponse>builder()
+                .message("Sign up successfully!")
+                .data(authService.signup(signupRequest))
+                .build();
     }
 
     @PostMapping("/forgot-password")

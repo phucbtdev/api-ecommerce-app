@@ -1,6 +1,7 @@
 package com.ecommerce_app.exception;
 
 import com.ecommerce_app.dto.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,11 +20,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
@@ -39,6 +42,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceAlreadyExistsException(
             ResourceAlreadyExistsException ex, WebRequest request) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
@@ -54,6 +58,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleBadRequestException(
             BadRequestException ex, WebRequest request) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
@@ -69,6 +74,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleUnauthorizedException(
             UnauthorizedException ex, WebRequest request) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
@@ -84,6 +90,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message("Access Denied: You don't have permission to access this resource")
@@ -100,7 +107,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleGlobalException(Exception ex, WebRequest request) {
-
+        log.error("Exception: ", ex);
         String path = ((ServletWebRequest) request).getRequest().getRequestURI();
 
         // Bỏ qua xử lý nếu là Swagger request
@@ -118,6 +125,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request) {
 
+        log.error("Exception: ", ex);
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
@@ -132,6 +140,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // ===== Helper =====
 
     private ResponseEntity<ApiResponse<ErrorDetails>> buildErrorResponse(Exception ex, WebRequest request, HttpStatus status) {
+        log.error("Exception: ", ex);
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
