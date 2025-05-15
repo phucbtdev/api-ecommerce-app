@@ -2,10 +2,15 @@ package com.ecommerce_app.controller;
 
 import com.ecommerce_app.dto.request.UserCreationRequest;
 import com.ecommerce_app.dto.request.UserUpdateRequest;
+import com.ecommerce_app.dto.response.PageResponse;
 import com.ecommerce_app.dto.response.UserResponse;
 import com.ecommerce_app.service.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,9 +57,12 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<PageResponse<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "10") int size,
+                                                                  @RequestParam(defaultValue = "id") String sortBy,
+                                                                  @RequestParam(defaultValue = "asc") String sortDir) {
+
+        return ResponseEntity.ok(userService.getAllUsers(page,size,sortBy,sortDir));
     }
 
     @PutMapping("/{id}")

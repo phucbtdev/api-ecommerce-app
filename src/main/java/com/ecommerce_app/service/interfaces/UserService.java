@@ -2,7 +2,10 @@ package com.ecommerce_app.service.interfaces;
 
 import com.ecommerce_app.dto.request.UserCreationRequest;
 import com.ecommerce_app.dto.request.UserUpdateRequest;
+import com.ecommerce_app.dto.response.PageResponse;
 import com.ecommerce_app.dto.response.UserResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Set;
@@ -46,7 +49,7 @@ public interface  UserService {
      *
      * @return list of all users
      */
-    List<UserResponse> getAllUsers();
+    PageResponse<UserResponse> getAllUsers(int page, int size, String sortBy, String sortDir);
 
     /**
      * Update user

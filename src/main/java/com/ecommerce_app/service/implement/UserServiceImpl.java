@@ -2,6 +2,7 @@ package com.ecommerce_app.service.implement;
 
 import com.ecommerce_app.dto.request.UserCreationRequest;
 import com.ecommerce_app.dto.request.UserUpdateRequest;
+import com.ecommerce_app.dto.response.PageResponse;
 import com.ecommerce_app.dto.response.UserResponse;
 import com.ecommerce_app.entity.Role;
 import com.ecommerce_app.entity.User;
@@ -13,6 +14,10 @@ import com.ecommerce_app.repository.UserRepository;
 import com.ecommerce_app.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,10 +103,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
+    public PageResponse<UserResponse> getAllUsers(
+            int page,
+            int size,
+            String sortBy,
+            String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<User> pageData = userRepository.findAll(pageable);
+        List<UserResponse> usertList = pageData.getContent().stream()
                 .map(userMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
+
+        return PageResponse.<UserResponse>builder()
+                .pageNo(page)
+                .pageSize(size)
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(usertList)
+                .build();
     }
 
     @Override
