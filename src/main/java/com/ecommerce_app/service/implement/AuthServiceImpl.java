@@ -6,6 +6,7 @@ import com.ecommerce_app.dto.auth.LoginRequest;
 import com.ecommerce_app.dto.auth.SignupRequest;
 import com.ecommerce_app.dto.auth.TokenResponse;
 import com.ecommerce_app.dto.request.ForgotPasswordRequest;
+import com.ecommerce_app.dto.request.LogoutRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
 import com.ecommerce_app.dto.response.AuthenticationResponse;
@@ -184,6 +185,18 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidated = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+        invalidatedTokenRepository.save(invalidated);
+    }
+
     private TokenInfo generateJwtToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
@@ -237,7 +250,7 @@ public class AuthServiceImpl implements AuthService {
 
     private record TokenInfo(String token, Date expiryDate) {}
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    public SignedJWT verifyToken(String token) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(jwtSecret.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -252,5 +265,9 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         return signedJWT;
+    }
+
+    public boolean isTokenInvalidated(String token) {
+        return invalidatedTokenRepository.existsById(token);
     }
 }

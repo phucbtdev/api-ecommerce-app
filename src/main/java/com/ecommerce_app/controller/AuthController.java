@@ -4,6 +4,7 @@ import com.ecommerce_app.dto.auth.LoginRequest;
 import com.ecommerce_app.dto.auth.SignupRequest;
 import com.ecommerce_app.dto.auth.TokenResponse;
 import com.ecommerce_app.dto.request.ForgotPasswordRequest;
+import com.ecommerce_app.dto.request.LogoutRequest;
 import com.ecommerce_app.dto.request.RefreshTokenRequest;
 import com.ecommerce_app.dto.request.ResetPasswordRequest;
 import com.ecommerce_app.dto.response.ApiResult;
@@ -127,4 +128,22 @@ public class AuthController {
         AuthenticationResponse response = authService.refreshToken(refreshTokenRequest);
         return ApiResult.success("Token refreshed successfully", response);
     }
+
+    /**
+     * API dùng để logout user khỏi hệ thống bằng cách vô hiệu hóa JWT access token hiện tại.
+     *
+     * @param request DTO chứa access token cần logout
+     * @return ResponseEntity báo logout thành công
+     */
+    @Operation(summary = "Logout", description = "Vô hiệu hoá access token hiện tại, yêu cầu gửi access token từ client.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout thành công"),
+            @ApiResponse(responseCode = "401", description = "Token không hợp lệ hoặc đã bị logout")
+    })
+    @PostMapping("/logout")
+    public ApiResult<Object> logout(@RequestBody @Valid LogoutRequest request) throws ParseException, JOSEException {
+        authService.logout(request);
+        return ApiResult.success("Logout thành công", null);
+    }
+
 }

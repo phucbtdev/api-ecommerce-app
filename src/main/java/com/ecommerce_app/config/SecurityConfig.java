@@ -11,15 +11,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final CustomJwtDecoder customJwtDecoder;
-
-    public SecurityConfig(CustomJwtDecoder customJwtDecoder) {
+    private final JwtAuthenticationFilter jwtFilter;
+    public SecurityConfig(CustomJwtDecoder customJwtDecoder,JwtAuthenticationFilter jwtFilter) {
         this.customJwtDecoder = customJwtDecoder;
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
@@ -41,6 +43,7 @@ public class SecurityConfig {
                         )
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
