@@ -1,23 +1,32 @@
+
 package com.ecommerce_app.controller;
 
 import com.ecommerce_app.dto.request.WishlistCreationRequest;
 import com.ecommerce_app.dto.request.WishlistUpdateRequest;
+import com.ecommerce_app.dto.response.ApiResult;
 import com.ecommerce_app.dto.response.WishlistResponse;
 import com.ecommerce_app.service.interfaces.WishlistService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 /**
  * REST Controller for Wishlist operations.
+ * Provides endpoints for creating, retrieving, updating, and deleting wishlists.
  */
 @RestController
 @RequestMapping("/wishlists")
 @RequiredArgsConstructor
+@Tag(name = "Wishlist", description = "Wishlist management API")
 public class WishlistController {
 
     private final WishlistService wishlistService;
@@ -27,38 +36,59 @@ public class WishlistController {
      *
      * @param request the creation request
      * @param userId the ID of the user
-     * @return the created Wishlist response
+     * @return ApiResult containing the created Wishlist response
      */
     @PostMapping
-    public ResponseEntity<WishlistResponse> createWishlist(
+    @Operation(summary = "Create a new wishlist", description = "Creates a new wishlist for the specified user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Wishlist successfully created",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ApiResult<WishlistResponse> createWishlist(
             @Valid @RequestBody WishlistCreationRequest request,
-            @RequestParam UUID userId) {
+            @Parameter(description = "ID of the user to create wishlist for") @RequestParam UUID userId) {
         WishlistResponse response = wishlistService.createWishlist(request, userId);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ApiResult.success("Wishlist successfully created", response);
     }
 
     /**
      * Retrieves a Wishlist by its ID.
      *
      * @param id the ID of the Wishlist
-     * @return the Wishlist response
+     * @return ApiResult containing the Wishlist response
      */
     @GetMapping("/{id}")
-    public ResponseEntity<WishlistResponse> getWishlistById(@PathVariable UUID id) {
+    @Operation(summary = "Get wishlist by ID", description = "Retrieves a wishlist based on its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Wishlist successfully retrieved",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "404", description = "Wishlist not found")
+    })
+    public ApiResult<WishlistResponse> getWishlistById(
+            @Parameter(description = "ID of the wishlist to retrieve") @PathVariable UUID id) {
         WishlistResponse response = wishlistService.getWishlistById(id);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Wishlist successfully retrieved", response);
     }
 
     /**
      * Retrieves a Wishlist by user ID.
      *
      * @param userId the ID of the user
-     * @return the Wishlist response
+     * @return ApiResult containing the Wishlist response
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<WishlistResponse> getWishlistByUserId(@PathVariable UUID userId) {
+    @Operation(summary = "Get wishlist by user ID", description = "Retrieves a wishlist based on the user ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Wishlist successfully retrieved",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "404", description = "User not found or wishlist not found for user")
+    })
+    public ApiResult<WishlistResponse> getWishlistByUserId(
+            @Parameter(description = "ID of the user to find wishlist for") @PathVariable UUID userId) {
         WishlistResponse response = wishlistService.getWishlistByUserId(userId);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Wishlist successfully retrieved", response);
     }
 
     /**
@@ -66,26 +96,39 @@ public class WishlistController {
      *
      * @param id the ID of the Wishlist
      * @param request the update request
-     * @return the updated Wishlist response
+     * @return ApiResult containing the updated Wishlist response
      */
     @PutMapping("/{id}")
-    public ResponseEntity<WishlistResponse> updateWishlist(
-            @PathVariable UUID id,
+    @Operation(summary = "Update a wishlist", description = "Updates a wishlist with the specified ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Wishlist successfully updated",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Wishlist not found")
+    })
+    public ApiResult<WishlistResponse> updateWishlist(
+            @Parameter(description = "ID of the wishlist to update") @PathVariable UUID id,
             @Valid @RequestBody WishlistUpdateRequest request) {
         WishlistResponse response = wishlistService.updateWishlist(id, request);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Wishlist successfully updated", response);
     }
 
     /**
      * Deletes a Wishlist by its ID.
      *
      * @param id the ID of the Wishlist
-     * @return no content response
+     * @return ApiResult with no data
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWishlist(@PathVariable UUID id) {
+    @Operation(summary = "Delete a wishlist", description = "Deletes a wishlist with the specified ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Wishlist successfully deleted",
+                    content = @Content(schema = @Schema(implementation = ApiResult.class))),
+            @ApiResponse(responseCode = "404", description = "Wishlist not found")
+    })
+    public ApiResult<Void> deleteWishlist(
+            @Parameter(description = "ID of the wishlist to delete") @PathVariable UUID id) {
         wishlistService.deleteWishlist(id);
-        return ResponseEntity.noContent().build();
+        return ApiResult.success("Wishlist successfully deleted", null);
     }
 }
-
