@@ -2,113 +2,135 @@ package com.ecommerce_app.controller;
 
 import com.ecommerce_app.dto.request.ProductImageCreationRequest;
 import com.ecommerce_app.dto.request.ProductImageUpdateRequest;
+import com.ecommerce_app.dto.response.ApiResult;
 import com.ecommerce_app.dto.response.ProductImageResponse;
 import com.ecommerce_app.service.interfaces.ProductImageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * REST controller for managing product images.
+ * Provides endpoints for creating, updating, retrieving, and deleting product images.
+ */
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Product Images", description = "API for product image management")
 public class ProductImageController {
 
     private final ProductImageService productImageService;
 
     /**
-     * Create a new product image
+     * Creates a new product image.
+     *
      * @param productId ID of the product
      * @param request Image creation details
-     * @return Created product image
+     * @return ApiResult containing the created product image
      */
     @PostMapping("/products/{productId}/images")
-    public ResponseEntity<ProductImageResponse> createProductImage(
+    @Operation(summary = "Create a new product image", description = "Adds a new image to the specified product")
+    public ApiResult<ProductImageResponse> createProductImage(
             @PathVariable UUID productId,
             @RequestBody ProductImageCreationRequest request) {
         ProductImageResponse response = productImageService.createProductImage(productId, request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ApiResult.success("Product image created successfully", response);
     }
 
     /**
-     * Update an existing product image
+     * Updates an existing product image.
+     *
      * @param id ID of the image to update
      * @param request Image update details
-     * @return Updated product image
+     * @return ApiResult containing the updated product image
      */
     @PutMapping("/product-images/{id}")
-    public ResponseEntity<ProductImageResponse> updateProductImage(
+    @Operation(summary = "Update a product image", description = "Updates an existing product image with the provided details")
+    public ApiResult<ProductImageResponse> updateProductImage(
             @PathVariable UUID id,
             @RequestBody ProductImageUpdateRequest request) {
         ProductImageResponse response = productImageService.updateProductImage(id, request);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Product image updated successfully", response);
     }
 
     /**
-     * Get a product image by ID
+     * Gets a product image by ID.
+     *
      * @param id ID of the image
-     * @return Product image details
+     * @return ApiResult containing the product image details
      */
     @GetMapping("/product-images/{id}")
-    public ResponseEntity<ProductImageResponse> getProductImageById(@PathVariable UUID id) {
+    @Operation(summary = "Get product image by ID", description = "Retrieves product image information for the specified ID")
+    public ApiResult<ProductImageResponse> getProductImageById(@PathVariable UUID id) {
         ProductImageResponse response = productImageService.getProductImageById(id);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Product image retrieved successfully", response);
     }
 
     /**
-     * Get all images for a specific product
+     * Gets all images for a specific product.
+     *
      * @param productId ID of the product
-     * @return List of product images
+     * @return ApiResult containing a list of product images
      */
     @GetMapping("/products/{productId}/images")
-    public ResponseEntity<List<ProductImageResponse>> getImagesByProductId(@PathVariable UUID productId) {
+    @Operation(summary = "Get all images for a product", description = "Retrieves all images associated with the specified product")
+    public ApiResult<List<ProductImageResponse>> getImagesByProductId(@PathVariable UUID productId) {
         List<ProductImageResponse> images = productImageService.getImagesByProductId(productId);
-        return ResponseEntity.ok(images);
+        return ApiResult.success("Product images retrieved successfully", images);
     }
 
     /**
-     * Get only product-level images (not variant-specific) for a product
+     * Gets only product-level images (not variant-specific) for a product.
+     *
      * @param productId ID of the product
-     * @return List of product-level images
+     * @return ApiResult containing a list of product-level images
      */
     @GetMapping("/products/{productId}/product-level-images")
-    public ResponseEntity<List<ProductImageResponse>> getProductLevelImages(@PathVariable UUID productId) {
+    @Operation(summary = "Get product-level images", description = "Retrieves only product-level images (not variant-specific) for the specified product")
+    public ApiResult<List<ProductImageResponse>> getProductLevelImages(@PathVariable UUID productId) {
         List<ProductImageResponse> images = productImageService.getProductLevelImages(productId);
-        return ResponseEntity.ok(images);
+        return ApiResult.success("Product-level images retrieved successfully", images);
     }
 
     /**
-     * Get all images for a specific product variant
+     * Gets all images for a specific product variant.
+     *
      * @param variantId ID of the product variant
-     * @return List of variant images
+     * @return ApiResult containing a list of variant images
      */
     @GetMapping("/product-variants/{variantId}/images")
-    public ResponseEntity<List<ProductImageResponse>> getImagesByVariantId(@PathVariable UUID variantId) {
+    @Operation(summary = "Get variant images", description = "Retrieves all images associated with the specified product variant")
+    public ApiResult<List<ProductImageResponse>> getImagesByVariantId(@PathVariable UUID variantId) {
         List<ProductImageResponse> images = productImageService.getImagesByVariantId(variantId);
-        return ResponseEntity.ok(images);
+        return ApiResult.success("Variant images retrieved successfully", images);
     }
 
     /**
-     * Delete a product image
+     * Deletes a product image.
+     *
      * @param id ID of the image to delete
-     * @return No content response
+     * @return ApiResult with a success message
      */
     @DeleteMapping("/product-images/{id}")
-    public ResponseEntity<Void> deleteProductImage(@PathVariable UUID id) {
+    @Operation(summary = "Delete a product image", description = "Deletes the product image with the specified ID")
+    public ApiResult<Void> deleteProductImage(@PathVariable UUID id) {
         productImageService.deleteProductImage(id);
-        return ResponseEntity.noContent().build();
+        return ApiResult.success("Product image deleted successfully", null);
     }
 
     /**
-     * Set an image as the main image for its product
+     * Sets an image as the main image for its product.
+     *
      * @param id ID of the image to set as main
-     * @return Updated product image
+     * @return ApiResult containing the updated product image
      */
     @PutMapping("/product-images/{id}/set-main")
-    public ResponseEntity<ProductImageResponse> setMainImage(@PathVariable UUID id) {
+    @Operation(summary = "Set main image", description = "Sets the specified image as the main image for its associated product")
+    public ApiResult<ProductImageResponse> setMainImage(@PathVariable UUID id) {
         ProductImageResponse response = productImageService.setMainImage(id);
-        return ResponseEntity.ok(response);
+        return ApiResult.success("Image set as main successfully", response);
     }
 }
